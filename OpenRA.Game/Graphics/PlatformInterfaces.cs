@@ -131,7 +131,7 @@ namespace OpenRA
 		void Bind();
 	}
 
-	public interface IShader
+	public interface IShader : IDisposable
 	{
 		void SetBool(string name, bool value);
 		void SetVec(string name, float x);
