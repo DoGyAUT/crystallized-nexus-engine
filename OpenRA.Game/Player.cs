@@ -236,6 +236,13 @@ namespace OpenRA
 		{
 			if (IsBot)
 			{
+				foreach (var resolver in PlayerActor.TraitsImplementing<IResolvePlayerName>())
+				{
+					var resolved = resolver.ResolvePlayerName(this);
+					if (resolved != null)
+						return resolved;
+				}
+
 				var botInfo = botInfos.First(b => b.Type == BotType);
 				var botsOfSameType = World.Players.Where(c => c.BotType == BotType).ToArray();
 				return FluentProvider.GetMessage(EnumeratedBotName,

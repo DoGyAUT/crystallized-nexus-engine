@@ -291,6 +291,9 @@ namespace OpenRA.Traits
 	[RequireExplicitImplementation]
 	public interface ISelectionBar { float GetValue(); Color GetColor(); bool DisplayWhenEmpty { get; } }
 
+	/// <summary>Marker interface: render this ISelectionBar above the health bar instead of below.</summary>
+	public interface ISelectionBarAboveHealth { }
+
 	public interface ISelectionDecorations
 	{
 		IEnumerable<IRenderable> RenderSelectionAnnotations(Actor self, WorldRenderer worldRenderer, Color color);
@@ -403,6 +406,9 @@ namespace OpenRA.Traits
 		object InitializeState(MapPreview map, Session lobbyInfo);
 		int AssignSpawnPoint(object state, Session lobbyInfo, Session.Client client, MersenneTwister playerRandom);
 	}
+
+	/// <summary>Allows traits on the Player actor to override the resolved display name for bot players.</summary>
+	public interface IResolvePlayerName { string ResolvePlayerName(Player player); }
 
 	public interface IBotInfo : ITraitInfoInterface
 	{
