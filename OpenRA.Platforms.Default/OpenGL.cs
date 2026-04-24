@@ -418,6 +418,12 @@ namespace OpenRA.Platforms.Default
 		public delegate void BlendFunc(int sfactor, int dfactor);
 		public static BlendFunc glBlendFunc { get; private set; }
 
+		public delegate void BlendFuncSeparate(int srcRGB, int dstRGB, int srcAlpha, int dstAlpha);
+		public static BlendFuncSeparate glBlendFuncSeparate { get; private set; }
+
+		public delegate void DepthMask(bool flag);
+		public static DepthMask glDepthMask { get; private set; }
+
 		public delegate void DepthFunc(int func);
 		public static DepthFunc glDepthFunc { get; private set; }
 
@@ -608,6 +614,8 @@ namespace OpenRA.Platforms.Default
 				glBlendEquation = Bind<BlendEquation>("glBlendEquation");
 				glBlendEquationSeparate = Bind<BlendEquationSeparate>("glBlendEquationSeparate");
 				glBlendFunc = Bind<BlendFunc>("glBlendFunc");
+				glBlendFuncSeparate = Bind<BlendFuncSeparate>("glBlendFuncSeparate");
+				glDepthMask = Bind<DepthMask>("glDepthMask");
 				glDepthFunc = Bind<DepthFunc>("glDepthFunc");
 				glScissor = Bind<Scissor>("glScissor");
 				glReadPixels = Bind<ReadPixels>("glReadPixels");

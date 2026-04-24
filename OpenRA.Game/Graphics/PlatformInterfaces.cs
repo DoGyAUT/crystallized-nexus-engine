@@ -44,7 +44,8 @@ namespace OpenRA
 		DoubleMultiplicative,
 		LowAdditive,
 		Screen,
-		Translucent
+		Translucent,
+		Overlay
 	}
 
 	public interface IPlatformWindow : IDisposable
