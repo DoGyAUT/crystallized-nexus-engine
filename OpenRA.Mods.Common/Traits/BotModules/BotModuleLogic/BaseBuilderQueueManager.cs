@@ -191,6 +191,11 @@ namespace OpenRA.Mods.Common.Traits
 						location = possibleBuilding.Actor.Location + possibleBuilding.Trait.Info.Offset;
 					}
 				}
+				else if (actorInfo.HasTraitInfo<LineBuildInfo>())
+				{
+					orderString = "LineBuild";
+					location = ChooseWallLocation(actorInfo).Location;
+				}
 				else
 				{
 					// Check if Building is a defense and if we should place it towards the enemy or not.
@@ -323,6 +328,21 @@ namespace OpenRA.Mods.Common.Traits
 				}
 			}
 
+			// Build walls around important structures
+			if (baseBuilder.Info.WalledStructures.Count > 0 && baseBuilder.Info.WallTypes.Count > 0)
+			{
+				var wall = GetProducibleBuilding(baseBuilder.Info.WallTypes, buildableThings);
+				if (wall != null && HasSufficientPowerForActor(wall))
+				{
+					var possibleLocation = ChooseWallLocation(wall);
+					if (possibleLocation.Location != null)
+					{
+						AIUtils.BotDebug("{0} decided to build {1}: Priority override (wall)", queue.Actor.Owner, wall.Name);
+						return wall;
+					}
+				}
+			}
+
 			// Make sure that we can spend as fast as we are earning
 			if (baseBuilder.Info.NewProductionCashThreshold > 0 && playerResources.GetCashAndResources() > baseBuilder.Info.NewProductionCashThreshold
 				&& world.LocalRandom.Next(100) < baseBuilder.Info.NewProductionChance)
@@ -441,6 +461,38 @@ namespace OpenRA.Mods.Common.Traits
 			// Too spammy to keep enabled all the time, but very useful when debugging specific issues.
 			// AIUtils.BotDebug("{0} couldn't decide what to build for queue {1}.", queue.Actor.Owner, queue.Info.Group);
 			return null;
+		}
+
+		(CPos? Location, int Variant) ChooseWallLocation(ActorInfo actorInfo)
+		{
+			if (baseBuilder.Info.WalledStructures.Count == 0)
+				return (null, 0);
+
+			var buildingToWall = world.ActorsWithTrait<Building>().FirstOrDefault(a =>
+				!a.Actor.Disposed && a.Actor.Owner == player &&
+				baseBuilder.Info.WalledStructures.Contains(a.Actor.Info.Name));
+
+			if (buildingToWall.Actor == null)
+				return (null, 0);
+
+			var topLeft = buildingToWall.Actor.Location;
+			var edges = new List<CPos>()
+			{
+				topLeft + new CVec(-1, -1),
+				topLeft + new CVec(buildingToWall.Trait.Info.Dimensions.X, -1),
+				topLeft + new CVec(-1, buildingToWall.Trait.Info.Dimensions.Y),
+				topLeft + buildingToWall.Trait.Info.Dimensions,
+			};
+
+			var wallBuildingInfo = actorInfo.TraitInfoOrDefault<BuildingInfo>();
+			if (wallBuildingInfo == null)
+				return (null, 0);
+
+			var possibleEdges = edges.Where(e => world.CanPlaceBuilding(e, actorInfo, wallBuildingInfo, null));
+			if (!possibleEdges.Any())
+				return (null, 0);
+
+			return (possibleEdges.Random(world.LocalRandom), 0);
 		}
 
 		(CPos? Location, CPos? BaseCenter, int Variant) ChooseBuildLocation(string actorType, bool distanceToBaseIsImportant, BuildingType type)

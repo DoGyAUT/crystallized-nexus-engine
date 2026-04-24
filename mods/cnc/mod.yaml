@@ -1,6 +1,6 @@
 Metadata:
 	Title: mod-title
-	Version: {DEV_VERSION}
+	Version: bleed
 	Website: https://www.openra.net
 	WebIcon32: https://www.openra.net/images/icons/cnc_32x32.png
 	WindowTitle: mod-windowtitle
@@ -39,7 +39,7 @@ FileSystem: ContentInstallerFileSystem
 
 MapFolders:
 	cnc|maps: System
-	~^SupportDir|maps/cnc/{DEV_VERSION}: User
+	~^SupportDir|maps/cnc/bleed: User
 
 Rules:
 	cnc|rules/misc.yaml

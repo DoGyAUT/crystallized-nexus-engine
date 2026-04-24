@@ -297,23 +297,26 @@ namespace OpenRA.Graphics
 
 			ApplyPostProcessing(PostProcessPassType.AfterActors);
 
+			if (enableDepthBuffer)
+				Game.Renderer.ClearDepthBuffer();
+
+			ApplyPostProcessing(PostProcessPassType.AfterWorld);
+
+			if (enableDepthBuffer)
+				Game.Renderer.Context.DisableDepthBuffer();
+
+			Game.Renderer.DisableScissor();
+
+			// IRenderAboveWorld is called after scissor is disabled so fullscreen
+			// overlays (weather, fog, etc.) are not clipped to the terrain bounds.
 			World.ApplyToActorsWithTrait<IRenderAboveWorld>((actor, trait) =>
 			{
 				if (actor.IsInWorld && !actor.Disposed)
 					trait.RenderAboveWorld(actor, this);
 			});
 
-			if (enableDepthBuffer)
-				Game.Renderer.ClearDepthBuffer();
-
-			ApplyPostProcessing(PostProcessPassType.AfterWorld);
-
+			Game.Renderer.Flush();
 			World.ApplyToActorsWithTrait<IRenderShroud>((actor, trait) => trait.RenderShroud(this));
-
-			if (enableDepthBuffer)
-				Game.Renderer.Context.DisableDepthBuffer();
-
-			Game.Renderer.DisableScissor();
 
 			// HACK: Keep old grouping behaviour
 			var groupedOverlayRenderables = preparedOverlayRenderables.GroupBy(prs => prs.GetType());

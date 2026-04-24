@@ -1,6 +1,6 @@
 Metadata:
 	Title: mod-title
-	Version: {DEV_VERSION}
+	Version: bleed
 	Website: https://www.openra.net
 	WebIcon32: https://www.openra.net/images/icons/ts_32x32.png
 	WindowTitle: mod-windowtitle
@@ -44,7 +44,7 @@ FileSystem: ContentInstallerFileSystem
 
 MapFolders:
 	ts|maps: System
-	~^SupportDir|maps/ts/{DEV_VERSION}: User
+	~^SupportDir|maps/ts/bleed: User
 
 Rules:
 	ts|rules/ai.yaml

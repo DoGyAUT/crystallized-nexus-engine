@@ -46,6 +46,12 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Tells the AI what building types are considered defenses.")]
 		public readonly FrozenSet<string> DefenseTypes = FrozenSet<string>.Empty;
 
+		[Desc("Tells the AI what building types are considered barriers/walls.")]
+		public readonly FrozenSet<string> WallTypes = FrozenSet<string>.Empty;
+
+		[Desc("Buildings that the AI should protect with walls.")]
+		public readonly FrozenSet<string> WalledStructures = FrozenSet<string>.Empty;
+
 		[Desc("Production queues AI uses for buildings.")]
 		public readonly FrozenSet<string> BuildingQueues = new HashSet<string> { "Building" }.ToFrozenSet();
 

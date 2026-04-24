@@ -134,6 +134,26 @@ namespace OpenRA.Mods.Common.Projectiles
 		[Desc("Should trail animation be spawned when the propulsion is not activated.")]
 		public readonly bool TrailWhenDeactivated = false;
 
+		[Desc("Second image that contains the trail animation (rendered on top of TrailImage).")]
+		public readonly string Trail2Image = null;
+
+		[SequenceReference(nameof(Trail2Image), allowNullImage: true)]
+		[Desc("Loop a randomly chosen sequence of Trail2Image from this list while this projectile is moving.")]
+		public readonly ImmutableArray<string> Trail2Sequences = ["idle"];
+
+		[PaletteReference(nameof(Trail2UsePlayerPalette))]
+		[Desc("Palette used to render the second trail sequence.")]
+		public readonly string Trail2Palette = "effect";
+
+		[Desc("Use the Player Palette to render the second trail sequence.")]
+		public readonly bool Trail2UsePlayerPalette = false;
+
+		[Desc("Interval in ticks between spawning second trail animation.")]
+		public readonly int Trail2Interval = 2;
+
+		[Desc("Should second trail animation be spawned when the propulsion is not activated.")]
+		public readonly bool Trail2WhenDeactivated = false;
+
 		[Desc("When set, display a line behind the actor. Length is measured in ticks after appearing.")]
 		public readonly int ContrailLength = 0;
 
@@ -215,8 +235,10 @@ namespace OpenRA.Mods.Common.Projectiles
 		int ticks;
 
 		int ticksToNextSmoke;
+		int ticksToNextSmoke2;
 		readonly ContrailRenderable contrail;
 		readonly string trailPalette;
+		readonly string trail2Palette;
 
 		States state;
 		bool targetPassedBy;
@@ -305,6 +327,10 @@ namespace OpenRA.Mods.Common.Projectiles
 			trailPalette = info.TrailPalette;
 			if (info.TrailUsePlayerPalette)
 				trailPalette += args.SourceActor.Owner.InternalName;
+
+			trail2Palette = info.Trail2Palette;
+			if (info.Trail2UsePlayerPalette)
+				trail2Palette += args.SourceActor.Owner.InternalName;
 
 			shadowColor = new float3(info.ShadowColor.R, info.ShadowColor.G, info.ShadowColor.B) / 255f;
 			shadowAlpha = info.ShadowColor.A / 255f;
@@ -906,6 +932,14 @@ namespace OpenRA.Mods.Common.Projectiles
 					info.TrailImage, info.TrailSequences.Random(world.SharedRandom), trailPalette)));
 
 				ticksToNextSmoke = info.TrailInterval;
+			}
+
+			if (!string.IsNullOrEmpty(info.Trail2Image) && --ticksToNextSmoke2 < 0 && (state != States.Freefall || info.Trail2WhenDeactivated))
+			{
+				world.AddFrameEndTask(w => w.Add(new SpriteEffect(pos - 3 * move / 2, renderFacing, w,
+					info.Trail2Image, info.Trail2Sequences.Random(world.SharedRandom), trail2Palette)));
+
+				ticksToNextSmoke2 = info.Trail2Interval;
 			}
 
 			if (info.ContrailLength > 0)
