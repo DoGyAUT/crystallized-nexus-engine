@@ -334,8 +334,8 @@ namespace OpenRA.Mods.Common.Traits
 				var wall = GetProducibleBuilding(baseBuilder.Info.WallTypes, buildableThings);
 				if (wall != null && HasSufficientPowerForActor(wall))
 				{
-					var possibleLocation = ChooseWallLocation(wall);
-					if (possibleLocation.Location != null)
+					var (wallLocation, _) = ChooseWallLocation(wall);
+					if (wallLocation != null)
 					{
 						AIUtils.BotDebug("{0} decided to build {1}: Priority override (wall)", queue.Actor.Owner, wall.Name);
 						return wall;
@@ -488,8 +488,8 @@ namespace OpenRA.Mods.Common.Traits
 			if (wallBuildingInfo == null)
 				return (null, 0);
 
-			var possibleEdges = edges.Where(e => world.CanPlaceBuilding(e, actorInfo, wallBuildingInfo, null));
-			if (!possibleEdges.Any())
+			var possibleEdges = edges.Where(e => world.CanPlaceBuilding(e, actorInfo, wallBuildingInfo, null)).ToArray();
+			if (possibleEdges.Length == 0)
 				return (null, 0);
 
 			return (possibleEdges.Random(world.LocalRandom), 0);
