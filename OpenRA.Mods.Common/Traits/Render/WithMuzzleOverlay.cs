@@ -24,6 +24,9 @@ namespace OpenRA.Mods.Common.Traits.Render
 		[Desc("Ignore the weapon position, and always draw relative to the center of the actor")]
 		public readonly bool IgnoreOffset = false;
 
+		[Desc("If true, the muzzle animation will not be restarted while already playing. Use for beam/sustained-fire weapons.")]
+		public readonly bool PlayOnce = false;
+
 		public override object Create(ActorInitializer init) { return new WithMuzzleOverlay(init.Self, this); }
 	}
 
@@ -77,6 +80,9 @@ namespace OpenRA.Mods.Common.Traits.Render
 		void INotifyAttack.Attacking(Actor self, in Target target, Armament a, Barrel barrel)
 		{
 			if (a == null || barrel == null || !armaments.Contains(a))
+				return;
+
+			if (Info.PlayOnce && visible[barrel])
 				return;
 
 			var sequence = a.Info.MuzzleSequence;
