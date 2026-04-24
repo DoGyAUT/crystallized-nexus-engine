@@ -210,8 +210,8 @@ namespace OpenRA.Platforms.Default
 			OpenGL.glBlendEquation(OpenGL.GL_FUNC_ADD);
 			OpenGL.CheckGLError();
 
-			// Restore depth writing for non-overlay modes
-			if (mode != BlendMode.Overlay)
+			// Restore depth writing only for opaque/alpha modes
+			if (mode != BlendMode.Overlay && mode != BlendMode.Additive && mode != BlendMode.Subtractive)
 				OpenGL.glDepthMask(true);
 
 			switch (mode)
@@ -235,6 +235,7 @@ namespace OpenRA.Platforms.Default
 						OpenGL.glBlendEquationSeparate(OpenGL.GL_FUNC_REVERSE_SUBTRACT, OpenGL.GL_FUNC_ADD);
 					}
 
+					OpenGL.glDepthMask(false);
 					break;
 				case BlendMode.Multiply:
 					OpenGL.glEnable(OpenGL.GL_BLEND);
