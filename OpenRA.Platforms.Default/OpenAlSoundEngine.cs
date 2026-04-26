@@ -46,15 +46,15 @@ namespace OpenRA.Platforms.Default
 			public OpenAlSound Sound;
 		}
 
-		const int MaxInstancesPerFrame = 3;
+		const int MaxInstancesPerFrame = 10;
 		const int GroupDistance = 2730;
 		const int GroupDistanceSqr = GroupDistance * GroupDistance;
 
 		// https://github.com/kcat/openal-soft/issues/580
 		// https://github.com/kcat/openal-soft/blob/b6aa73b26004afe63d83097f2f91ecda9bc25cb9/alc/alc.cpp#L3191-L3203
-		const int PoolSize = 256;
+		const int DesiredPoolSize = 512;
 
-		readonly Dictionary<uint, PoolSlot> sourcePool = new(PoolSize);
+		readonly Dictionary<uint, PoolSlot> sourcePool = new(DesiredPoolSize);
 		float volume = 1f;
 		IntPtr device;
 		IntPtr context;
@@ -135,7 +135,7 @@ namespace OpenRA.Platforms.Default
 				throw new InvalidOperationException("Can't create OpenAL context");
 			ALC10.alcMakeContextCurrent(context);
 
-			for (var i = 0; i < PoolSize; i++)
+			for (var i = 0; i < DesiredPoolSize; i++)
 			{
 				AL10.alGenSources(1, out var source);
 				if (AL10.alGetError() != AL10.AL_NO_ERROR)
@@ -239,7 +239,8 @@ namespace OpenRA.Platforms.Default
 				}
 
 				// Attenuate a little bit based on number of active sounds:
-				atten = 0.66f * ((PoolSize - activeCount * 0.5f) / PoolSize);
+				var poolSize = sourcePool.Count;
+				atten = 0.66f * ((poolSize - activeCount * 0.5f) / poolSize);
 			}
 
 			if (!TryGetSourceFromPool(out var source))
@@ -372,7 +373,7 @@ namespace OpenRA.Platforms.Default
 				StopAllSounds();
 
 			if (sourcePool.Count > 0)
-				AL10.alDeleteSources(PoolSize, sourcePool.Keys.ToArray());
+				AL10.alDeleteSources(sourcePool.Count, sourcePool.Keys.ToArray());
 
 			sourcePool.Clear();
 

@@ -51,6 +51,7 @@ namespace OpenRA.Mods.Common.Traits
 		Player player;
 
 		IBotTick[] tickModules;
+		string[] tickModuleNames;
 		IBotRespondToAttack[] attackResponseModules;
 
 		IBotInfo IBot.Info => info;
@@ -73,6 +74,7 @@ namespace OpenRA.Mods.Common.Traits
 			IsEnabled = true;
 			player = p;
 			tickModules = p.PlayerActor.TraitsImplementing<IBotTick>().ToArray();
+			tickModuleNames = Array.ConvertAll(tickModules, t => "bot_" + t.GetType().Name);
 			attackResponseModules = p.PlayerActor.TraitsImplementing<IBotRespondToAttack>().ToArray();
 			foreach (var ibe in p.PlayerActor.TraitsImplementing<IBotEnabled>())
 				ibe.BotEnabled(this);
@@ -92,9 +94,14 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				Sync.RunUnsynced(Game.Settings.Debug.SyncCheckBotModuleCode, world, () =>
 				{
-					foreach (var t in tickModules)
-						if (t.IsTraitEnabled())
+					for (var i = 0; i < tickModules.Length; i++)
+					{
+						var t = tickModules[i];
+						if (!t.IsTraitEnabled())
+							continue;
+						using (new PerfSample(tickModuleNames[i]))
 							t.BotTick(this);
+					}
 				});
 			}
 
