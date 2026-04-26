@@ -46,6 +46,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			SettingsUtils.BindCheckboxPref(panel, "MUTE_BACKGROUND_MUSIC", soundSettings, "MuteBackgroundMusic");
 
 			SettingsUtils.BindSliderPref(panel, "SOUND_VOLUME", soundSettings, "SoundVolume");
+			SettingsUtils.BindSliderPref(panel, "SPEECH_VOLUME", soundSettings, "SpeechVolume");
 			SettingsUtils.BindSliderPref(panel, "MUSIC_VOLUME", soundSettings, "MusicVolume");
 			SettingsUtils.BindSliderPref(panel, "VIDEO_VOLUME", soundSettings, "VideoVolume");
 
@@ -86,11 +87,15 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			panel.Get("MUTE_SOUND_CONTAINER").Visible = !Game.Sound.DummyEngine;
 			panel.Get("MUTE_BACKGROUND_MUSIC_CONTAINER").Visible = !Game.Sound.DummyEngine;
 			panel.Get("SOUND_VOLUME_CONTAINER").Visible = !Game.Sound.DummyEngine;
+			panel.Get("SPEECH_VOLUME_CONTAINER").Visible = !Game.Sound.DummyEngine;
 			panel.Get("MUSIC_VOLUME_CONTAINER").Visible = !Game.Sound.DummyEngine;
 			panel.Get("VIDEO_VOLUME_CONTAINER").Visible = !Game.Sound.DummyEngine;
 
 			var soundVolumeSlider = panel.Get<SliderWidget>("SOUND_VOLUME");
 			soundVolumeSlider.OnChange += x => Game.Sound.SoundVolume = x;
+
+			var speechVolumeSlider = panel.Get<SliderWidget>("SPEECH_VOLUME");
+			speechVolumeSlider.OnChange += x => Game.Sound.SpeechVolume = x;
 
 			var musicVolumeSlider = panel.Get<SliderWidget>("MUSIC_VOLUME");
 			musicVolumeSlider.OnChange += x => Game.Sound.MusicVolume = x;
@@ -127,6 +132,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			return () =>
 			{
 				soundSettings.SoundVolume = defaultSoundSettings.SoundVolume;
+				soundSettings.SpeechVolume = defaultSoundSettings.SpeechVolume;
 				soundSettings.MusicVolume = defaultSoundSettings.MusicVolume;
 				soundSettings.VideoVolume = defaultSoundSettings.VideoVolume;
 				soundSettings.CashTicks = defaultSoundSettings.CashTicks;
@@ -136,6 +142,8 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 
 				panel.Get<SliderWidget>("SOUND_VOLUME").Value = soundSettings.SoundVolume;
 				Game.Sound.SoundVolume = soundSettings.SoundVolume;
+				panel.Get<SliderWidget>("SPEECH_VOLUME").Value = soundSettings.SpeechVolume;
+				Game.Sound.SpeechVolume = soundSettings.SpeechVolume;
 				panel.Get<SliderWidget>("MUSIC_VOLUME").Value = soundSettings.MusicVolume;
 				Game.Sound.MusicVolume = soundSettings.MusicVolume;
 				panel.Get<SliderWidget>("VIDEO_VOLUME").Value = soundSettings.VideoVolume;

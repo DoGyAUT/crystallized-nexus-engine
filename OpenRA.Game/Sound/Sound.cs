@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using OpenRA.FileSystem;
 using OpenRA.GameRules;
 using OpenRA.Primitives;
@@ -46,6 +47,7 @@ namespace OpenRA
 		ISound video;
 		readonly Dictionary<uint, ISound> currentSounds = [];
 		readonly Dictionary<string, ISound> currentNotifications = [];
+		readonly List<ISound> currentSpeechSounds = [];
 		public bool DummyEngine { get; }
 
 		public Sound(IPlatform platform, SoundSettings soundSettings)
@@ -98,6 +100,7 @@ namespace OpenRA
 			sounds = new Cache<string, ISoundSource>(filename => LoadSound(filename, LoadIntoMemory));
 			currentSounds.Clear();
 			currentNotifications.Clear();
+			currentSpeechSounds.Clear();
 			video = null;
 		}
 
@@ -317,6 +320,19 @@ namespace OpenRA
 
 		float InternalSoundVolume => SoundVolume * soundVolumeModifier;
 
+		public float SpeechVolume
+		{
+			get => Game.Settings.Sound.SpeechVolume;
+
+			set
+			{
+				Game.Settings.Sound.SpeechVolume = value;
+				currentSpeechSounds.RemoveAll(s => s.Complete);
+				foreach (var sound in currentSpeechSounds.Where(s => !s.Complete))
+					sound.Volume = value;
+			}
+		}
+
 		public float SoundVolume
 		{
 			get => Game.Settings.Sound.SoundVolume;
@@ -407,12 +423,14 @@ namespace OpenRA
 
 			var name = prefix + clip + suffix;
 			var actorId = voicedActor != null && voicedActor.World.Selection.Contains(voicedActor) ? 0 : id;
+			var isSpeechSound = voicedActor != null || type.Equals("Speech", StringComparison.InvariantCultureIgnoreCase);
 
 			if (!string.IsNullOrEmpty(name) && (player == null || player == player.World.LocalPlayer))
 			{
 				ISound PlaySound()
 				{
-					var volume = InternalSoundVolume * volumeModifier * pool.VolumeModifier;
+					var baseVolume = isSpeechSound ? SpeechVolume : InternalSoundVolume;
+					var volume = baseVolume * volumeModifier * pool.VolumeModifier;
 					return soundEngine.Play2D(sounds[name], false, relative, pos, volume, attenuateVolume);
 				}
 
@@ -436,6 +454,8 @@ namespace OpenRA
 						return false;
 					else
 						currentNotifications[name] = sound;
+					if (isSpeechSound)
+						currentSpeechSounds.Add(sound);
 				}
 				else
 				{
@@ -452,6 +472,8 @@ namespace OpenRA
 						return false;
 					else
 						currentSounds[actorId] = sound;
+					if (isSpeechSound)
+						currentSpeechSounds.Add(sound);
 				}
 			}
 
