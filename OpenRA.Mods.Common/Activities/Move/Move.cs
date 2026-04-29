@@ -500,13 +500,13 @@ namespace OpenRA.Mods.Common.Activities
 				mobile.SetCenterPosition(self, pos);
 
 				// Smoothly interpolate over terrain orientation changes
-				if (FromTerrainOrientation.HasValue && progress < terrainOrientationMargin)
+				if (terrainOrientationMargin > 0 && FromTerrainOrientation.HasValue && progress < terrainOrientationMargin)
 				{
 					var currentCellOrientation = self.World.Map.TerrainOrientation(mobile.FromCell);
 					var orientation = WRot.SLerp(FromTerrainOrientation.Value, currentCellOrientation, progress, terrainOrientationMargin);
 					mobile.SetTerrainRampOrientation(orientation);
 				}
-				else if (ToTerrainOrientation.HasValue && Distance - progress < terrainOrientationMargin)
+				else if (terrainOrientationMargin > 0 && ToTerrainOrientation.HasValue && Distance - progress < terrainOrientationMargin)
 				{
 					var currentCellOrientation = self.World.Map.TerrainOrientation(mobile.FromCell);
 					var orientation = WRot.SLerp(ToTerrainOrientation.Value, currentCellOrientation, Distance - progress, terrainOrientationMargin);
