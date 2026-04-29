@@ -83,6 +83,7 @@ namespace OpenRA.Graphics
 				renderer.Context.DrawElements(span.Length / 4 * 6, span.Start * 6);
 			}
 
+			renderer.Context.SetBlendMode(BlendMode.None);
 			PerfHistory.Increment("batches", 1);
 			blendSpans.Clear();
 			Array.Clear(sheets, 0, SheetCount);
