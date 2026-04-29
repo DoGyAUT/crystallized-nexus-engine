@@ -194,6 +194,12 @@ namespace OpenRA
 
 		public static WRot SLerp(in WRot a, in WRot b, int mul, int div)
 		{
+			if (mul <= 0)
+				return a;
+
+			if (mul >= div)
+				return b;
+
 			// This implements the standard spherical linear interpolation
 			// between two quaternions, accounting for OpenRA's integer math
 			// conventions and WRot always using (nearly) normalized quaternions
@@ -209,6 +215,9 @@ namespace OpenRA
 			var s2 = new WAngle(mul * theta.Angle / div).Sin();
 			var s3 = theta.Sin();
 
+			if (s3 == 0)
+				return NLerp(a, b, flip, mul, div);
+
 			var x = ((long)a.x * s1 + flip * b.x * s2) / s3;
 			var y = ((long)a.y * s1 + flip * b.y * s2) / s3;
 			var z = ((long)a.z * s1 + flip * b.z * s2) / s3;
@@ -216,6 +225,23 @@ namespace OpenRA
 
 			// Normalize to 1024 == 1.0
 			var l = Exts.ISqrt(x * x + y * y + z * z + w * w);
+			if (l == 0)
+				return NLerp(a, b, flip, mul, div);
+
+			return new WRot((int)(1024 * x / l), (int)(1024 * y / l), (int)(1024 * z / l), (int)(1024 * w / l));
+		}
+
+		static WRot NLerp(in WRot a, in WRot b, int flip, int mul, int div)
+		{
+			var x = (long)a.x * (div - mul) + flip * (long)b.x * mul;
+			var y = (long)a.y * (div - mul) + flip * (long)b.y * mul;
+			var z = (long)a.z * (div - mul) + flip * (long)b.z * mul;
+			var w = (long)a.w * (div - mul) + flip * (long)b.w * mul;
+			var l = Exts.ISqrt(x * x + y * y + z * z + w * w);
+
+			if (l == 0)
+				return mul * 2 < div ? a : b;
+
 			return new WRot((int)(1024 * x / l), (int)(1024 * y / l), (int)(1024 * z / l), (int)(1024 * w / l));
 		}
 	}
