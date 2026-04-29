@@ -85,6 +85,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		bool initialGenerationDone;
 
 		volatile bool failed;
+		volatile string failedReason = "";
 		volatile uint generationCounter = 0;
 		volatile uint lastGeneration = 0;
 
@@ -101,7 +102,9 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			settings = generator.GetSettings();
 			preview = widget.Get<GeneratedMapPreviewWidget>("PREVIEW");
 
-			widget.Get("ERROR").IsVisible = () => failed;
+			var errorLabel = widget.Get<LabelWidget>("ERROR");
+			errorLabel.IsVisible = () => failed;
+			errorLabel.GetText = () => failedReason;
 
 			var title = new CachedTransform<string, string>(id => FluentProvider.GetMessage(id));
 			var previewTitleLabel = widget.Get<LabelWidget>("TITLE");
@@ -411,6 +414,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			var currentGeneration = Interlocked.Increment(ref generationCounter);
 
 			failed = false;
+			failedReason = "";
 			onGenerate(null, null);
 			preview.Clear();
 
@@ -427,11 +431,12 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 					args = settings.Compile(selectedTerrain, size);
 					map = generator.Generate(modData, args);
 				}
-				catch (MapGenerationException)
+				catch (MapGenerationException e)
 				{
-					// We are the lastest generation request, mark as failed.
+					// We are the latest generation request, mark as failed.
 					if (currentGeneration == generationCounter)
 					{
+						failedReason = e.Message;
 						lastGeneration = currentGeneration;
 						failed = true;
 					}
