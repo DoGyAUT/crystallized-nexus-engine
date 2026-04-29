@@ -58,6 +58,18 @@ namespace OpenRA.Graphics
 			vertices = renderer.Context.CreateVertices<Vertex>(renderer.TempVertexBufferSize);
 		}
 
+		void AddBlendSpan(BlendMode blendMode)
+		{
+			if (blendSpans.Count == 0 || blendSpans[^1].Mode != blendMode)
+				blendSpans.Add(new BlendSpan(vertexCount, 4, blendMode));
+			else
+			{
+				// PERF: modify in-place.
+				var span = CollectionsMarshal.AsSpan(blendSpans);
+				span[^1].Length += 4;
+			}
+		}
+
 		public void Flush()
 		{
 			if (vertexCount <= 0)
@@ -97,15 +109,6 @@ namespace OpenRA.Graphics
 
 			if (vertexCount + 4 > renderer.TempVertexBufferSize)
 				Flush();
-
-			if (blendSpans.Count == 0 || blendSpans[^1].Mode != s.BlendMode)
-				blendSpans.Add(new BlendSpan(vertexCount, 4, s.BlendMode));
-			else
-			{
-				// PERF: modify in-place.
-				var span = CollectionsMarshal.AsSpan(blendSpans);
-				span[^1].Length += 4;
-			}
 
 			// Check if the sheet (or secondary data sheet) have already been mapped
 			var sheet = s.Sheet;
@@ -149,6 +152,8 @@ namespace OpenRA.Graphics
 				sheets[secondarySheetIndex] = ss.SecondarySheet;
 				sheetCount++;
 			}
+
+			AddBlendSpan(s.BlendMode);
 
 			return new int2(sheetIndex, secondarySheetIndex);
 		}
@@ -242,14 +247,7 @@ namespace OpenRA.Graphics
 			if (vertexCount + 4 > renderer.TempVertexBufferSize)
 				Flush();
 
-			if (blendSpans.Count == 0 || blendSpans[^1].Mode != blendMode)
-				blendSpans.Add(new BlendSpan(vertexCount, 4, blendMode));
-			else
-			{
-				// PERF: modify in-place.
-				var span = CollectionsMarshal.AsSpan(blendSpans);
-				span[^1].Length += 4;
-			}
+			AddBlendSpan(blendMode);
 
 			Array.Copy(v, 0, vertices, vertexCount, v.Length);
 			vertexCount += 4;
