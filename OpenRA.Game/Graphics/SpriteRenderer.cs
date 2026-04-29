@@ -172,7 +172,7 @@ namespace OpenRA.Graphics
 			vertexCount += 4;
 		}
 
-		public void DrawVertexBuffer(IVertexBuffer<Vertex> buffer, IIndexBuffer indices, int start, int length, IEnumerable<Sheet> sheets, BlendMode blendMode)
+		public void DrawVertexBuffer(IVertexBuffer<Vertex> buffer, int start, int length, IEnumerable<Sheet> sheets, BlendMode blendMode)
 		{
 			var i = 0;
 			foreach (var s in sheets)
@@ -186,7 +186,7 @@ namespace OpenRA.Graphics
 
 			renderer.Context.SetBlendMode(blendMode);
 			Shader.PrepareRender();
-			renderer.DrawQuadBatch(buffer, indices, Shader, length, UintSize * start);
+			renderer.DrawQuadBatch(buffer, Shader, length, UintSize * start);
 			renderer.Context.SetBlendMode(BlendMode.None);
 		}
 
