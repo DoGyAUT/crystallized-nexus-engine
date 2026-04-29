@@ -79,6 +79,15 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Types of damage that are caused while crushing. Leave empty for no damage types.")]
 		public readonly BitSet<DamageType> CrushDamageTypes = default;
 
+		[Desc("Footprint cell chars (e.g. 'f') that this locomotor can pass through without being blocked.")]
+		public readonly string PassableFootprints = "";
+
+		[Desc("Percentage to multiply movement cost when moving uphill (height increases). 100 = no change, 150 = 50% slower.")]
+		public readonly int SlopeUphillCostModifier = 100;
+
+		[Desc("Percentage to multiply movement cost when moving downhill (height decreases). 100 = no change, 75 = 25% faster.")]
+		public readonly int SlopeDownhillCostModifier = 100;
+
 		[FieldLoader.LoadUsing(nameof(LoadSpeeds), true)]
 		[Desc("Lower the value on rough terrain. Leave out entries for impassable terrain.")]
 		public readonly FrozenDictionary<string, TerrainInfo> TerrainSpeeds;
@@ -191,6 +200,56 @@ namespace OpenRA.Mods.Common.Traits
 			return terrainInfos[index].Speed;
 		}
 
+		public int MovementSpeedForCell(CPos fromCell, CPos toCell)
+		{
+			var speed = MovementSpeedForCell(toCell);
+
+			if (fromCell.Layer == 0 && toCell.Layer == 0 && world.Map.Grid.MaximumTerrainHeight > 0)
+			{
+				var heightDelta = EffectiveSlopeHeightDelta(fromCell, toCell);
+				if (heightDelta > 0 && Info.SlopeUphillCostModifier != 100)
+					speed = Math.Max(speed * 100 / Info.SlopeUphillCostModifier, 1);
+				else if (heightDelta < 0 && Info.SlopeDownhillCostModifier != 100)
+					speed = speed * 100 / Info.SlopeDownhillCostModifier;
+			}
+
+			return speed;
+		}
+
+		public float GetSlopeSpeedFactor(CPos fromCell, CPos toCell)
+		{
+			if (fromCell.Layer != 0 || toCell.Layer != 0 || world.Map.Grid.MaximumTerrainHeight == 0)
+				return 1f;
+
+			var heightDelta = EffectiveSlopeHeightDelta(fromCell, toCell);
+			if (heightDelta > 0 && Info.SlopeUphillCostModifier != 100)
+				return 100f / Info.SlopeUphillCostModifier;
+			if (heightDelta < 0 && Info.SlopeDownhillCostModifier != 100)
+				return 100f / Info.SlopeDownhillCostModifier;
+			return 1f;
+		}
+
+		// Returns the effective height delta for slope speed/cost purposes.
+		// When the immediate delta is 0 but the destination is a ramp tile, looks
+		// one cell ahead in the travel direction to catch ramp-bottom cells whose
+		// height matches the adjacent flat terrain.
+		int EffectiveSlopeHeightDelta(CPos fromCell, CPos toCell)
+		{
+			var heightDelta = world.Map.Height[toCell] - world.Map.Height[fromCell];
+			if (heightDelta != 0)
+				return heightDelta;
+
+			var toTerrainInfo = world.Map.Rules.TerrainInfo.GetTerrainInfo(world.Map.Tiles[toCell]);
+			if (toTerrainInfo.RampType == 0)
+				return 0;
+
+			var lookAhead = toCell + (toCell - fromCell);
+			if (!world.Map.Contains(lookAhead) || lookAhead.Layer != 0)
+				return 0;
+
+			return world.Map.Height[lookAhead] - world.Map.Height[fromCell];
+		}
+
 		public short MovementCostToEnterCell(
 			Actor actor, CPos destNode, BlockedByActor check, Actor ignoreActor, bool ignoreSelf = false, SubCell subCell = SubCell.FullCell)
 		{
@@ -211,6 +270,15 @@ namespace OpenRA.Mods.Common.Traits
 			if (cellCost == PathGraph.MovementCostForUnreachableCell ||
 				!CanMoveFreelyInto(actor, destNode, SubCell.FullCell, check, ignoreActor, ignoreSelf))
 				return PathGraph.MovementCostForUnreachableCell;
+
+			if (srcNode.Layer == 0 && destNode.Layer == 0 && world.Map.Grid.MaximumTerrainHeight > 0)
+			{
+				var heightDelta = EffectiveSlopeHeightDelta(srcNode, destNode);
+				if (heightDelta > 0 && Info.SlopeUphillCostModifier != 100)
+					cellCost = (short)Math.Clamp(cellCost * Info.SlopeUphillCostModifier / 100, 1, PathGraph.MovementCostForUnreachableCell - 1);
+				else if (heightDelta < 0 && Info.SlopeDownhillCostModifier != 100)
+					cellCost = (short)Math.Clamp(cellCost * Info.SlopeDownhillCostModifier / 100, 1, PathGraph.MovementCostForUnreachableCell - 1);
+			}
 
 			return cellCost;
 		}
@@ -484,6 +552,12 @@ namespace OpenRA.Mods.Common.Traits
 					var mobile = actor.OccupiesSpace as Mobile;
 					var isMovable = mobile != null && !mobile.IsTraitDisabled && !mobile.IsTraitPaused && !mobile.IsImmovable;
 					var isMoving = isMovable && mobile.CurrentMovementTypes.HasMovementType(MovementType.Horizontal);
+
+					if (Info.PassableFootprints.Length > 0 &&
+						actor.OccupiesSpace is Building cpBuilding &&
+						cpBuilding.ConditionallyPassableCells().Contains(cell) &&
+						world.Map.Contains(cell))
+						continue;
 
 					var isTransitOnly = actor.OccupiesSpace is Building building && building.TransitOnlyCells().Contains(cell);
 

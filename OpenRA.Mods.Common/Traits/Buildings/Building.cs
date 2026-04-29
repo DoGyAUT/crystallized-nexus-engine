@@ -25,7 +25,8 @@ namespace OpenRA.Mods.Common.Traits
 		OccupiedPassable = '=',
 		Occupied = 'x',
 		OccupiedUntargetable = 'X',
-		OccupiedPassableTransitOnly = '+'
+		OccupiedPassableTransitOnly = '+',
+		ConditionallyPassable = 'f'
 	}
 
 	public class BuildingInfo : TraitInfo, IOccupySpaceInfo, IPlaceBuildingDecorationInfo
@@ -34,7 +35,8 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly FrozenSet<string> TerrainTypes = FrozenSet<string>.Empty;
 
 		[Desc("x means cell is blocked, capital X means blocked but not counting as targetable, ",
-			"= means part of the footprint but passable, _ means completely empty.")]
+			"= means part of the footprint but passable, _ means completely empty, ",
+			"f means passable only by locomotors that list 'f' in PassableFootprints.")]
 		[FieldLoader.LoadUsing(nameof(LoadFootprint))]
 		public readonly FrozenDictionary<CVec, FootprintCellType> Footprint;
 
@@ -112,6 +114,9 @@ namespace OpenRA.Mods.Common.Traits
 
 			foreach (var t in FootprintTiles(location, FootprintCellType.OccupiedPassableTransitOnly))
 				yield return t;
+
+			foreach (var t in FootprintTiles(location, FootprintCellType.ConditionallyPassable))
+				yield return t;
 		}
 
 		public IEnumerable<CPos> FrozenUnderFogTiles(CPos location)
@@ -132,6 +137,15 @@ namespace OpenRA.Mods.Common.Traits
 				yield return t;
 
 			foreach (var t in FootprintTiles(location, FootprintCellType.OccupiedPassableTransitOnly))
+				yield return t;
+
+			foreach (var t in FootprintTiles(location, FootprintCellType.ConditionallyPassable))
+				yield return t;
+		}
+
+		public IEnumerable<CPos> ConditionallyPassableTiles(CPos location)
+		{
+			foreach (var t in FootprintTiles(location, FootprintCellType.ConditionallyPassable))
 				yield return t;
 		}
 
@@ -274,6 +288,7 @@ namespace OpenRA.Mods.Common.Traits
 		readonly (CPos, SubCell)[] occupiedCells;
 		readonly (CPos, SubCell)[] targetableCells;
 		readonly CPos[] transitOnlyCells;
+		readonly CPos[] conditionallyPassableCells;
 
 		[VerifySync]
 		public CPos TopLeft { get; }
@@ -293,6 +308,7 @@ namespace OpenRA.Mods.Common.Traits
 				.Select(c => (c, SubCell.FullCell)).ToArray();
 
 			transitOnlyCells = Info.TransitOnlyTiles(TopLeft).ToArray();
+			conditionallyPassableCells = Info.ConditionallyPassableTiles(TopLeft).ToArray();
 
 			CenterPosition = init.World.Map.CenterOfCell(TopLeft) + Info.CenterOffset(init.World);
 		}
@@ -300,6 +316,7 @@ namespace OpenRA.Mods.Common.Traits
 		public (CPos, SubCell)[] OccupiedCells() { return occupiedCells; }
 
 		public CPos[] TransitOnlyCells() { return transitOnlyCells; }
+		public CPos[] ConditionallyPassableCells() { return conditionallyPassableCells; }
 
 		(CPos, SubCell)[] ITargetableCells.TargetableCells() { return targetableCells; }
 

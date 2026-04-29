@@ -461,7 +461,7 @@ namespace OpenRA.Mods.Common.Activities
 				// Only move by a full speed step if we didn't already move this tick.
 				// If we did, we limit the move to any carried-over leftover progress.
 				if (Move.lastMovePartCompletedTick < self.World.WorldTick)
-					progress += mobile.MovementSpeedForCell(mobile.ToCell);
+					progress += mobile.MovementSpeedForCell(mobile.FromCell, mobile.ToCell);
 
 				if (progress >= Distance)
 				{

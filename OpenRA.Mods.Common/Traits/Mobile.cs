@@ -176,6 +176,8 @@ namespace OpenRA.Mods.Common.Traits
 		readonly Actor self;
 		readonly Lazy<IEnumerable<int>> speedModifiers;
 
+		float slopeSpeedFactor = 1f;
+
 		readonly bool returnToCellOnCreation;
 		readonly bool returnToCellOnCreationRecalculateSubCell = true;
 		readonly int creationActivityDelay;
@@ -326,6 +328,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void UpdateMovement()
 		{
+			var targetSlopeFactor = IsMovingBetweenCells ? Locomotor.GetSlopeSpeedFactor(FromCell, ToCell) : 1f;
+			slopeSpeedFactor += (targetSlopeFactor - slopeSpeedFactor) * 0.2f;
+
 			var newMovementTypes = MovementType.None;
 			if ((oldPos - CenterPosition).HorizontalLengthSquared != 0)
 				newMovementTypes |= MovementType.Horizontal;
@@ -748,6 +753,14 @@ namespace OpenRA.Mods.Common.Traits
 		public int MovementSpeedForCell(CPos cell)
 		{
 			var terrainSpeed = Locomotor.MovementSpeedForCell(cell);
+			var modifiers = speedModifiers.Value.Append(terrainSpeed);
+
+			return Util.ApplyPercentageModifiers(Info.Speed, modifiers);
+		}
+
+		public int MovementSpeedForCell(CPos fromCell, CPos toCell)
+		{
+			var terrainSpeed = (int)Math.Max(Locomotor.MovementSpeedForCell(toCell) * slopeSpeedFactor, 1f);
 			var modifiers = speedModifiers.Value.Append(terrainSpeed);
 
 			return Util.ApplyPercentageModifiers(Info.Speed, modifiers);

@@ -686,6 +686,12 @@ namespace OpenRA.Mods.Common.Pathfinder
 			if (isTransitOnly)
 				return false;
 
+			if (locomotor.Info.PassableFootprints.Length > 0 &&
+				actor.OccupiesSpace is Building cpBuilding &&
+				cpBuilding.ConditionallyPassableCells().Contains(cell) &&
+				world.Map.Contains(cell))
+				return false;
+
 			return true;
 		}
 
