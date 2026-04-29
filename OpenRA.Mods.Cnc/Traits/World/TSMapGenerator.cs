@@ -1184,10 +1184,8 @@ namespace OpenRA.Mods.Cnc.Traits
 				FlushPavedRoadGridRun(roadCells, run, minimumLength);
 			}
 
-			bool IsPavedRoadGridCell(CPos cpos, CellLayer<bool> roadable)
-			{
-				return map.Contains(cpos) && playable[cpos] && roadable[cpos] && HasFlatPavedRoadFootprint(cpos);
-			}
+			bool IsPavedRoadGridCell(CPos cpos, CellLayer<bool> roadable) =>
+				map.Contains(cpos) && playable[cpos] && roadable[cpos] && HasFlatPavedRoadFootprint(cpos);
 
 			bool HasFlatPavedRoadFootprint(CPos cpos)
 			{
@@ -1249,7 +1247,7 @@ namespace OpenRA.Mods.Cnc.Traits
 						var cx = sub[0].X;
 						var h = map.Height[sub[0]];
 						StampRoadEnd(new CPos(cx - 2, sub[0].Y - 3), param.PavedRoadClearNorthWestTile, 4, 3, h);
-						StampRoadEnd(new CPos(cx - 1, sub[sub.Count - 1].Y + 1), param.PavedRoadClearSouthEastTile, 4, 3, h);
+						StampRoadEnd(new CPos(cx - 1, sub[^1].Y + 1), param.PavedRoadClearSouthEastTile, 4, 3, h);
 					}
 				}
 
@@ -1262,7 +1260,7 @@ namespace OpenRA.Mods.Cnc.Traits
 						var cy = sub[0].Y;
 						var h = map.Height[sub[0]];
 						StampRoadEnd(new CPos(sub[0].X - 3, cy - 1), param.PavedRoadClearSouthWestTile, 3, 4, h);
-						StampRoadEnd(new CPos(sub[sub.Count - 1].X + 1, cy - 1), param.PavedRoadClearNorthEastTile, 3, 4, h);
+						StampRoadEnd(new CPos(sub[^1].X + 1, cy - 1), param.PavedRoadClearNorthEastTile, 3, 4, h);
 					}
 				}
 
@@ -1400,36 +1398,11 @@ namespace OpenRA.Mods.Cnc.Traits
 				};
 			}
 
-			void StampCompactPavedRoadEnd(CPos center, PavedRoadConnections connection)
-			{
-				switch (connection)
-				{
-					case PavedRoadConnections.NorthWest:
-						SetRoadTile(center, param.PavedRoadEndSouthEastTile, 1);
-						break;
-					case PavedRoadConnections.NorthEast:
-						SetRoadTile(center, param.PavedRoadEndSouthWestTile, 1);
-						break;
-					case PavedRoadConnections.SouthEast:
-						SetRoadTile(center, param.PavedRoadEndNorthWestTile, 1);
-						break;
-					case PavedRoadConnections.SouthWest:
-						SetRoadTile(center, param.PavedRoadEndNorthEastTile, 1);
-						break;
-				}
-			}
-
 			void StampSquarePavedRoad(CPos center, ushort template)
 			{
 				for (var y = -1; y <= 1; y++)
 					for (var x = -1; x <= 1; x++)
 						SetRoadTile(center + new CVec(x, y), template, (byte)((y + 1) * 3 + x + 1));
-			}
-
-			static int PositiveMod(int value, int divisor)
-			{
-				var result = value % divisor;
-				return result < 0 ? result + divisor : result;
 			}
 
 			void SetRoadTile(CPos cpos, ushort template, byte index)
