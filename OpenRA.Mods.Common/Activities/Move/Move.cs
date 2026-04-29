@@ -463,7 +463,7 @@ namespace OpenRA.Mods.Common.Activities
 				if (Move.lastMovePartCompletedTick < self.World.WorldTick)
 					progress += mobile.MovementSpeedForCell(mobile.FromCell, mobile.ToCell);
 
-				if (progress >= Distance)
+				if (Distance <= 0 || progress >= Distance)
 				{
 					var toPos = To;
 
