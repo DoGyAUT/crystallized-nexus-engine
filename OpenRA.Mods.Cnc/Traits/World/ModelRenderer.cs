@@ -390,7 +390,7 @@ namespace OpenRA.Mods.Cnc.Traits
 
 			mappedBuffers.Clear();
 			unmappedBuffers.Clear();
-			shader.Dispose();
+			Shader.Dispose();
 			renderer.WorldRenderers = renderer.WorldRenderers.Where(r => r != this).ToArray();
 		}
 
