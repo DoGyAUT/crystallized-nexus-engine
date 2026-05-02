@@ -60,8 +60,11 @@ namespace OpenRA.Mods.Common.Activities
 				SearchCells.Clear();
 				searchCellsTick = self.World.WorldTick;
 				foreach (var cell in map.FindTilesInAnnulus(lastVisibleTargetLocation, minCells, maxCells))
-					if (Mobile.CanStayInCell(cell) && Mobile.CanEnterCell(cell) && AtCorrectRange(map.CenterOfSubCell(cell, Mobile.FromSubCell)))
-						SearchCells.Add(cell);
+				{
+					var candidate = CandidateCellOnCurrentLayer(cell);
+					if (Mobile.CanStayInCell(candidate) && Mobile.CanEnterCell(candidate) && AtCorrectRange(CandidatePosition(self, candidate)))
+						SearchCells.Add(candidate);
+				}
 			}
 
 			if (SearchCells.Count == 0)
@@ -73,6 +76,20 @@ namespace OpenRA.Mods.Common.Activities
 		bool AtCorrectRange(WPos origin)
 		{
 			return Target.IsInRange(origin, maxRange) && !Target.IsInRange(origin, minRange);
+		}
+
+		CPos CandidateCellOnCurrentLayer(CPos cell)
+		{
+			var layer = Mobile.ToCell.Layer != 0 ? Mobile.ToCell.Layer : Mobile.FromCell.Layer;
+			return layer == 0 ? cell : new CPos(cell.X, cell.Y, layer);
+		}
+
+		WPos CandidatePosition(Actor self, CPos cell)
+		{
+			if (cell.Layer == 0)
+				return map.CenterOfSubCell(cell, Mobile.FromSubCell);
+
+			return self.World.GetCustomMovementLayers()[cell.Layer].CenterOfCell(cell) + map.Grid.OffsetOfSubCell(Mobile.FromSubCell);
 		}
 	}
 }

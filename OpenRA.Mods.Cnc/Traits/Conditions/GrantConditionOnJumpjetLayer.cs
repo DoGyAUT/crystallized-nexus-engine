@@ -10,6 +10,7 @@
 #endregion
 
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Traits;
 
 namespace OpenRA.Mods.Cnc.Traits
 {
@@ -27,7 +28,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		}
 	}
 
-	public class GrantConditionOnJumpjetLayer : GrantConditionOnLayer<GrantConditionOnJumpjetLayerInfo>, INotifyFinishedMoving
+	public class GrantConditionOnJumpjetLayer : GrantConditionOnLayer<GrantConditionOnJumpjetLayerInfo>, INotifyFinishedMoving, ITick
 	{
 		bool jumpjetInAir;
 
@@ -38,6 +39,23 @@ namespace OpenRA.Mods.Cnc.Traits
 		{
 			if (jumpjetInAir && oldLayer != ValidLayerType && newLayer != ValidLayerType)
 				UpdateConditions(self, oldLayer, newLayer);
+		}
+
+		void ITick.Tick(Actor self)
+		{
+			var isAboveGround = self.World.Map.DistanceAboveTerrain(self.CenterPosition).Length > 0;
+			var isOnJumpjetLayer = self.Location.Layer == ValidLayerType;
+
+			if (!jumpjetInAir && (isOnJumpjetLayer || isAboveGround) && conditionToken == Actor.InvalidConditionToken)
+			{
+				conditionToken = self.GrantCondition(Info.Condition);
+				jumpjetInAir = true;
+			}
+			else if (jumpjetInAir && !isOnJumpjetLayer && !isAboveGround && conditionToken != Actor.InvalidConditionToken)
+			{
+				conditionToken = self.RevokeCondition(conditionToken);
+				jumpjetInAir = false;
+			}
 		}
 
 		protected override void UpdateConditions(Actor self, byte oldLayer, byte newLayer)

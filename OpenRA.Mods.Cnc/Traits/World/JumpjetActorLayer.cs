@@ -27,18 +27,23 @@ namespace OpenRA.Mods.Cnc.Traits
 		[Desc("Cell radius for smoothing adjacent cell heights.")]
 		public readonly int SmoothingRadius = 2;
 
+		[Desc("Should idle jumpjet actors automatically return to the ground layer?")]
+		public readonly bool ReturnToGroundLayerOnIdle = true;
+
 		public override object Create(ActorInitializer init) { return new JumpjetActorLayer(init.Self, this); }
 	}
 
 	public class JumpjetActorLayer : ICustomMovementLayer
 	{
 		readonly Map map;
+		readonly JumpjetActorLayerInfo info;
 
 		readonly byte terrainIndex;
 		readonly CellLayer<int> height;
 
 		public JumpjetActorLayer(Actor self, JumpjetActorLayerInfo info)
 		{
+			this.info = info;
 			map = self.World.Map;
 			terrainIndex = self.World.Map.Rules.TerrainInfo.GetTerrainIndex(info.TerrainType);
 			height = new CellLayer<int>(map);
@@ -67,7 +72,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		bool ICustomMovementLayer.EnabledForLocomotor(LocomotorInfo li) { return li is JumpjetLocomotorInfo; }
 		byte ICustomMovementLayer.Index => CustomMovementLayerType.Jumpjet;
 		bool ICustomMovementLayer.InteractsWithDefaultLayer => true;
-		bool ICustomMovementLayer.ReturnToGroundLayerOnIdle => true;
+		bool ICustomMovementLayer.ReturnToGroundLayerOnIdle => info.ReturnToGroundLayerOnIdle;
 
 		WPos ICustomMovementLayer.CenterOfCell(CPos cell)
 		{

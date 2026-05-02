@@ -477,6 +477,9 @@ label-player-count =
        *[other] { $players } Players
     }
 label-map-size-huge = Huge
+label-map-size-giant = Giant
+label-map-size-epic = Epic
+label-map-size-ludicrous = Ludicrous
 label-map-size-large = Large
 label-map-size-medium = Medium
 label-map-size-small = Small

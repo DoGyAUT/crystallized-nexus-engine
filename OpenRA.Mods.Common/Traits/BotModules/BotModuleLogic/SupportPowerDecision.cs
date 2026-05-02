@@ -122,7 +122,7 @@ namespace OpenRA.Mods.Common.Traits
 		/// <summary>Makes up part of a decision, describing how to evaluate a target.</summary>
 		public class Consideration
 		{
-			public enum DecisionMetric { Health, Value, None }
+			public enum DecisionMetric { Health, Value, None, HealthLoss }
 
 			[Desc("Against whom should this power be used?", "Allowed keywords: Ally, Neutral, Enemy")]
 			public readonly PlayerRelationship Against = PlayerRelationship.Enemy;
@@ -173,6 +173,14 @@ namespace OpenRA.Mods.Common.Traits
 							// Cast to long to avoid overflow when multiplying by the health
 							return (int)((long)health.HP * Attractiveness / health.MaxHP);
 
+						case DecisionMetric.HealthLoss:
+							var healthLoss = a.TraitOrDefault<IHealth>();
+
+							if (healthLoss == null)
+								return 0;
+
+							return (int)((long)(healthLoss.MaxHP - healthLoss.HP) * Attractiveness / healthLoss.MaxHP);
+
 						default:
 							return Attractiveness;
 					}
@@ -200,6 +208,10 @@ namespace OpenRA.Mods.Common.Traits
 						case DecisionMetric.Health:
 							var healthInfo = fa.Info.TraitInfoOrDefault<IHealthInfo>();
 							return (healthInfo != null) ? fa.HP * Attractiveness / healthInfo.MaxHP : 0;
+
+						case DecisionMetric.HealthLoss:
+							var healthLossInfo = fa.Info.TraitInfoOrDefault<IHealthInfo>();
+							return (healthLossInfo != null) ? (healthLossInfo.MaxHP - fa.HP) * Attractiveness / healthLossInfo.MaxHP : 0;
 
 						default:
 							return Attractiveness;

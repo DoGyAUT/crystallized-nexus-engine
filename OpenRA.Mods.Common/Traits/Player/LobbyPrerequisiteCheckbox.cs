@@ -44,6 +44,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Display order for the checkbox in the lobby.")]
 		public readonly int DisplayOrder = 0;
 
+		[Desc("Options category in which to display the checkbox in the lobby.")]
+		public readonly string Category = null;
+
 		[FieldLoader.Require]
 		[Desc("Prerequisites to grant when this checkbox is enabled.")]
 		public readonly FrozenSet<string> Prerequisites = FrozenSet<string>.Empty;
@@ -53,7 +56,7 @@ namespace OpenRA.Mods.Common.Traits
 		IEnumerable<LobbyOption> ILobbyOptions.LobbyOptions(MapPreview map)
 		{
 			yield return new LobbyBooleanOption(map, ID, Label, Description,
-				Visible, DisplayOrder, Enabled, Locked);
+				Visible, DisplayOrder, Enabled, Locked, Category);
 		}
 
 		public override object Create(ActorInitializer init) { return new LobbyPrerequisiteCheckbox(this); }

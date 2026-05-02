@@ -479,7 +479,11 @@ namespace OpenRA.Mods.Common.Traits
 				self.World.GetCustomMovementLayers()[cell.Layer].CenterOfCell(cell);
 
 			position += self.World.Map.Grid.OffsetOfSubCell(subCell);
-			position -= new WVec(0, 0, self.World.Map.DistanceAboveTerrain(position).Length);
+
+			// Custom movement layers provide their own world height. Only ground-layer cells
+			// need the ramp correction that projects the position back onto the terrain.
+			if (cell.Layer == 0)
+				position -= new WVec(0, 0, self.World.Map.DistanceAboveTerrain(position).Length);
 
 			SetCenterPosition(self, position);
 			FinishedMoving(self);

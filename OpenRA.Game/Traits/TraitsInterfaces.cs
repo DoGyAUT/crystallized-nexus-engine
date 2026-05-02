@@ -588,9 +588,10 @@ namespace OpenRA.Traits
 		public readonly bool IsLocked;
 		public readonly bool IsVisible;
 		public readonly int DisplayOrder;
+		public readonly string Category;
 
 		public LobbyOption(MapPreview map, string id, string name, string description, bool visible, int displayorder,
-			IReadOnlyDictionary<string, string> values, string defaultValue, bool locked)
+			IReadOnlyDictionary<string, string> values, string defaultValue, bool locked, string category = null)
 		{
 			Id = id;
 			Name = map.GetMessage(name);
@@ -600,6 +601,7 @@ namespace OpenRA.Traits
 			Values = values.ToDictionary(v => v.Key, v => map.GetMessage(v.Value));
 			DefaultValue = defaultValue;
 			IsLocked = locked;
+			Category = category;
 		}
 
 		public virtual string Label(string value)
@@ -616,8 +618,9 @@ namespace OpenRA.Traits
 			{ false.ToString(), "Disabled" }
 		};
 
-		public LobbyBooleanOption(MapPreview map, string id, string name, string description, bool visible, int displayorder, bool defaultValue, bool locked)
-			: base(map, id, name, description, visible, displayorder, new ReadOnlyDictionary<string, string>(BoolValues), defaultValue.ToString(), locked) { }
+		public LobbyBooleanOption(MapPreview map, string id, string name, string description, bool visible,
+			int displayorder, bool defaultValue, bool locked, string category = null)
+			: base(map, id, name, description, visible, displayorder, new ReadOnlyDictionary<string, string>(BoolValues), defaultValue.ToString(), locked, category) { }
 
 		public override string Label(string newValue)
 		{

@@ -515,6 +515,7 @@ label-mapchooser-random-map-error = Map Generation Failed
 button-mapchooser-random-map-generate = Generate
 label-mapchooser-random-map-tileset = Environment:
 label-mapchooser-random-map-size = Map Size:
+label-mapchooser-random-map-aspect-ratio = Map Format:
 label-mapchooser-random-map-error-desc = Adjust the settings or try again.
 
 ## missionbrowser.yaml

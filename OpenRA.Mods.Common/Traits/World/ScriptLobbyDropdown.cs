@@ -49,10 +49,13 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Display order for the option in the lobby.")]
 		public readonly int DisplayOrder = 0;
 
+		[Desc("Category for the option in the lobby.")]
+		public readonly string Category = null;
+
 		IEnumerable<LobbyOption> ILobbyOptions.LobbyOptions(MapPreview map)
 		{
 			yield return new LobbyOption(map, ID, Label, Description, Visible, DisplayOrder,
-				Values, Default, Locked);
+				Values, Default, Locked, Category);
 		}
 
 		public override object Create(ActorInitializer init) { return new ScriptLobbyDropdown(this); }

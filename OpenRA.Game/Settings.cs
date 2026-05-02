@@ -16,6 +16,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using OpenRA.Primitives;
 
 namespace OpenRA
@@ -381,6 +382,9 @@ namespace OpenRA
 
 	public class Settings
 	{
+		const int SaveMaxRetryCount = 10;
+		const int SaveRetryDelay = 50;
+
 		readonly string settingsFile;
 
 		public readonly PlayerSettings Player;
@@ -494,7 +498,26 @@ namespace OpenRA
 				return container;
 			}
 
-			yaml.Where(n => n.Value.Nodes.Count > 0).SelectMany(AddSpacer).WriteToFile(settingsFile);
+			try
+			{
+				for (var i = 0; ; i++)
+				{
+					try
+					{
+						yaml.Where(n => n.Value.Nodes.Count > 0).SelectMany(AddSpacer).WriteToFile(settingsFile);
+						return;
+					}
+					catch (IOException) when (i < SaveMaxRetryCount)
+					{
+						Thread.Sleep(SaveRetryDelay);
+					}
+				}
+			}
+			catch (IOException e)
+			{
+				Log.Write("debug", $"Failed to save settings to `{settingsFile}`.");
+				Log.Write("debug", e);
+			}
 		}
 
 		static string SanitizedName(string dirty)
