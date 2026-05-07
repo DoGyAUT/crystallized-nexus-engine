@@ -247,10 +247,10 @@ namespace OpenRA.Mods.Common.Projectiles
 
 		WPos targetPosition;
 
-		public bool IsJammable => info.Jammable;
-		public Actor SourceActor => args.SourceActor;
-		public Target GuidedTarget => args.GuidedTarget;
-		public WPos Position => pos;
+		bool IJammableProjectile.IsJammable => info.Jammable;
+		Actor IJammableProjectile.SourceActor => args.SourceActor;
+		Target IJammableProjectile.GuidedTarget => args.GuidedTarget;
+		WPos IJammableProjectile.Position => pos;
 		readonly WVec offset;
 
 		WVec tarVel;

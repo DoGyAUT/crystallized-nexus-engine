@@ -31,7 +31,6 @@ namespace OpenRA.Mods.Cnc.Graphics
 		readonly PaletteReference shadowPalette;
 		readonly Func<int?> shadowGroundZFunc;
 		readonly float scale;
-		readonly bool isDecoration;
 		readonly bool reflectZ;
 
 		public ModelRenderable(
@@ -65,7 +64,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			Alpha = alpha;
 			Tint = tint;
 			TintModifiers = tintModifiers;
-			this.isDecoration = isDecoration;
+			IsDecoration = isDecoration;
 			this.reflectZ = reflectZ;
 		}
 
@@ -85,7 +84,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 		public WPos Pos { get; }
 		public PaletteReference Palette { get; }
 		public int ZOffset { get; }
-		public bool IsDecoration => isDecoration;
+		public bool IsDecoration { get; }
 
 		public float Alpha { get; }
 		public float3 Tint { get; }
@@ -96,7 +95,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				newPalette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, isDecoration, reflectZ);
+				newPalette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, IsDecoration, reflectZ);
 		}
 
 		public IRenderable WithZOffset(int newOffset)
@@ -104,7 +103,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, newOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, isDecoration, reflectZ);
+				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, IsDecoration, reflectZ);
 		}
 
 		public IRenderable OffsetBy(in WVec vec)
@@ -112,7 +111,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos + vec, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, isDecoration, reflectZ);
+				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, IsDecoration, reflectZ);
 		}
 
 		public IRenderable AsDecoration()
@@ -120,7 +119,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, true, reflectZ);
+				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, isDecoration: true, reflectZ);
 		}
 
 		public ModelRenderable WithZReflection()
@@ -128,7 +127,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, isDecoration, true);
+				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, IsDecoration, reflectZ: true);
 		}
 
 		public IModifyableRenderable WithAlpha(float newAlpha)
@@ -136,7 +135,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, newAlpha, Tint, TintModifiers, shadowGroundZFunc, isDecoration, reflectZ);
+				Palette, normalsPalette, shadowPalette, newAlpha, Tint, TintModifiers, shadowGroundZFunc, IsDecoration, reflectZ);
 		}
 
 		public IModifyableRenderable WithTint(in float3 newTint, TintModifiers newTintModifiers)
@@ -144,7 +143,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, Alpha, newTint, newTintModifiers, shadowGroundZFunc, isDecoration, reflectZ);
+				Palette, normalsPalette, shadowPalette, Alpha, newTint, newTintModifiers, shadowGroundZFunc, IsDecoration, reflectZ);
 		}
 
 		public IFinalizedRenderable PrepareRender(WorldRenderer wr)
