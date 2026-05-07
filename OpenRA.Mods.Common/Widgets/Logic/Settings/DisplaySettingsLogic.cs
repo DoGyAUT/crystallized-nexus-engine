@@ -148,6 +148,9 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			var world = worldRenderer.World;
 			var scrollPanel = panel.Get<ScrollPanelWidget>("SETTINGS_SCROLLPANEL");
 
+			SettingsUtils.BindCheckboxPref(panel, "WATER_EFFECTS_CHECKBOX", graphicSettings, "WaterEffects");
+			SettingsUtils.BindCheckboxPref(panel, "CLOUD_SHADOWS_CHECKBOX", graphicSettings, "CloudShadows");
+			SettingsUtils.BindCheckboxPref(panel, "VOXEL_DYNAMICS_CHECKBOX", graphicSettings, "VoxelDynamics");
 			SettingsUtils.BindCheckboxPref(panel, "CURSORDOUBLE_CHECKBOX", graphicSettings, "CursorDouble");
 			SettingsUtils.BindCheckboxPref(panel, "VSYNC_CHECKBOX", graphicSettings, "VSync");
 			SettingsUtils.BindCheckboxPref(panel, "FRAME_LIMIT_CHECKBOX", graphicSettings, "CapFramerate");

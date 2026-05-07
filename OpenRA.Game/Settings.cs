@@ -267,6 +267,15 @@ namespace OpenRA
 		[Desc("Disable operating-system provided cursor rendering.")]
 		public bool DisableHardwareCursors = false;
 
+		[Desc("Enable water reflection and overlay post-process effects.")]
+		public bool WaterEffects = true;
+
+		[Desc("Enable procedural cloud shadow post-process effect.")]
+		public bool CloudShadows = true;
+
+		[Desc("Enable VoxelDynamics tilt and recoil animations on units.")]
+		public bool VoxelDynamics = true;
+
 		[Desc("Display index to use in a multi-monitor fullscreen setup.")]
 		public int VideoDisplay = 0;
 

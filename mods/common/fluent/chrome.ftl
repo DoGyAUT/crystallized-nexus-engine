@@ -677,6 +677,9 @@ checkbox-transients-container =
     .tooltip = Show transient text notifications for game events
 
 checkbox-pause-shellmap-container = Pause Menu Background
+checkbox-water-effects-container = Water Effects
+checkbox-cloud-shadows-container = Cloud Shadows
+checkbox-voxel-dynamics-container = Voxel Dynamics
 label-video-section-header = Video
 label-video-mode-dropdown-container = Video Mode:
 dropdownbutton-video-mode-dropdown-container = Windowed

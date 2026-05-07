@@ -147,6 +147,41 @@ Container@DISPLAY_PANEL:
 									Height: 20
 									Font: Regular
 									Text: checkbox-pause-shellmap-container
+				Container@ROW:
+					Width: PARENT_WIDTH - 24
+					Height: 20
+					Children:
+						Container@WATER_EFFECTS_CHECKBOX_CONTAINER:
+							X: 10
+							Width: PARENT_WIDTH / 2 - 20
+							Children:
+								Checkbox@WATER_EFFECTS_CHECKBOX:
+									Width: PARENT_WIDTH
+									Height: 20
+									Font: Regular
+									Text: checkbox-water-effects-container
+						Container@CLOUD_SHADOWS_CHECKBOX_CONTAINER:
+							X: PARENT_WIDTH / 2 + 10
+							Width: PARENT_WIDTH / 2 - 20
+							Children:
+								Checkbox@CLOUD_SHADOWS_CHECKBOX:
+									Width: PARENT_WIDTH
+									Height: 20
+									Font: Regular
+									Text: checkbox-cloud-shadows-container
+				Container@ROW:
+					Width: PARENT_WIDTH - 24
+					Height: 20
+					Children:
+						Container@VOXEL_DYNAMICS_CHECKBOX_CONTAINER:
+							X: 10
+							Width: PARENT_WIDTH / 2 - 20
+							Children:
+								Checkbox@VOXEL_DYNAMICS_CHECKBOX:
+									Width: PARENT_WIDTH
+									Height: 20
+									Font: Regular
+									Text: checkbox-voxel-dynamics-container
 				Container@SPACER:
 				Background@VIDEO_SECTION_HEADER:
 					X: 5
