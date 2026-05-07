@@ -37,6 +37,9 @@ namespace OpenRA.Mods.Common.Traits
 			"Minimum is 1")]
 		public readonly int FineScanRadius = 2;
 
+		[Desc("Fire this support power as soon as it is ready without scanning for a target location.")]
+		public readonly bool FireWithoutTarget = false;
+
 		[FieldLoader.LoadUsing(nameof(LoadConsiderations))]
 		[Desc("The decisions associated with this power")]
 		public readonly ImmutableArray<Consideration> Considerations = [];

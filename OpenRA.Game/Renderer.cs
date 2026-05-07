@@ -469,10 +469,10 @@ namespace OpenRA
 			}
 		}
 
-		public void EnableDepthBuffer()
+		public void EnableDepthBuffer(bool clear = true)
 		{
 			Flush();
-			Context.EnableDepthBuffer();
+			Context.EnableDepthBuffer(clear);
 		}
 
 		public void DisableDepthBuffer()

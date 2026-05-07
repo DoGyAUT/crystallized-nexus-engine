@@ -178,11 +178,15 @@ namespace OpenRA.Platforms.Default
 			OpenGL.CheckGLError();
 		}
 
-		public void EnableDepthBuffer()
+		public void EnableDepthBuffer(bool clear = true)
 		{
 			VerifyThreadAffinity();
-			OpenGL.glClear(OpenGL.GL_DEPTH_BUFFER_BIT);
-			OpenGL.CheckGLError();
+			if (clear)
+			{
+				OpenGL.glClear(OpenGL.GL_DEPTH_BUFFER_BIT);
+				OpenGL.CheckGLError();
+			}
+
 			OpenGL.glEnable(OpenGL.GL_DEPTH_TEST);
 			OpenGL.CheckGLError();
 			OpenGL.glDepthFunc(OpenGL.GL_LEQUAL);

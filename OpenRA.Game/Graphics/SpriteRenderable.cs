@@ -22,9 +22,10 @@ namespace OpenRA.Graphics
 		readonly WPos pos;
 		readonly float scale;
 		readonly WAngle rotation = WAngle.Zero;
+		readonly bool flipY;
 
 		public SpriteRenderable(Sprite sprite, WPos pos, WVec offset, int zOffset, PaletteReference palette, float scale, float alpha,
-			float3 tint, TintModifiers tintModifiers, bool isDecoration, WAngle rotation)
+			float3 tint, TintModifiers tintModifiers, bool isDecoration, WAngle rotation, bool flipY = false)
 		{
 			this.sprite = sprite;
 			this.pos = pos;
@@ -33,6 +34,7 @@ namespace OpenRA.Graphics
 			Palette = palette;
 			this.scale = scale;
 			this.rotation = rotation;
+			this.flipY = flipY;
 			Tint = tint;
 			IsDecoration = isDecoration;
 			TintModifiers = tintModifiers;
@@ -61,32 +63,37 @@ namespace OpenRA.Graphics
 
 		public IPalettedRenderable WithPalette(PaletteReference newPalette)
 		{
-			return new SpriteRenderable(sprite, pos, Offset, ZOffset, newPalette, scale, Alpha, Tint, TintModifiers, IsDecoration, rotation);
+			return new SpriteRenderable(sprite, pos, Offset, ZOffset, newPalette, scale, Alpha, Tint, TintModifiers, IsDecoration, rotation, flipY);
 		}
 
 		public IRenderable WithZOffset(int newOffset)
 		{
-			return new SpriteRenderable(sprite, pos, Offset, newOffset, Palette, scale, Alpha, Tint, TintModifiers, IsDecoration, rotation);
+			return new SpriteRenderable(sprite, pos, Offset, newOffset, Palette, scale, Alpha, Tint, TintModifiers, IsDecoration, rotation, flipY);
 		}
 
 		public IRenderable OffsetBy(in WVec vec)
 		{
-			return new SpriteRenderable(sprite, pos + vec, Offset, ZOffset, Palette, scale, Alpha, Tint, TintModifiers, IsDecoration, rotation);
+			return new SpriteRenderable(sprite, pos + vec, Offset, ZOffset, Palette, scale, Alpha, Tint, TintModifiers, IsDecoration, rotation, flipY);
 		}
 
 		public IRenderable AsDecoration()
 		{
-			return new SpriteRenderable(sprite, pos, Offset, ZOffset, Palette, scale, Alpha, Tint, TintModifiers, true, rotation);
+			return new SpriteRenderable(sprite, pos, Offset, ZOffset, Palette, scale, Alpha, Tint, TintModifiers, true, rotation, flipY);
 		}
 
 		public IModifyableRenderable WithAlpha(float newAlpha)
 		{
-			return new SpriteRenderable(sprite, pos, Offset, ZOffset, Palette, scale, newAlpha, Tint, TintModifiers, IsDecoration, rotation);
+			return new SpriteRenderable(sprite, pos, Offset, ZOffset, Palette, scale, newAlpha, Tint, TintModifiers, IsDecoration, rotation, flipY);
 		}
 
 		public IModifyableRenderable WithTint(in float3 newTint, TintModifiers newTintModifiers)
 		{
-			return new SpriteRenderable(sprite, pos, Offset, ZOffset, Palette, scale, Alpha, newTint, newTintModifiers, IsDecoration, rotation);
+			return new SpriteRenderable(sprite, pos, Offset, ZOffset, Palette, scale, Alpha, newTint, newTintModifiers, IsDecoration, rotation, flipY);
+		}
+
+		public SpriteRenderable WithYFlip()
+		{
+			return new SpriteRenderable(sprite, pos, Offset, ZOffset, Palette, scale, Alpha, Tint, TintModifiers, IsDecoration, rotation, true);
 		}
 
 		float3 ScreenPosition(WorldRenderer wr)
@@ -108,7 +115,11 @@ namespace OpenRA.Graphics
 			if ((TintModifiers & TintModifiers.ReplaceColor) != 0)
 				a *= -1;
 
-			wsr.DrawSprite(sprite, Palette, ScreenPosition(wr), scale, t, a, rotation.RendererRadians());
+			if (flipY)
+				wsr.DrawSprite(sprite, Palette, ScreenPosition(wr) + new float3(0, scale * sprite.Size.Y, 0),
+					new float3(scale, -scale, scale), t, a, rotation.RendererRadians());
+			else
+				wsr.DrawSprite(sprite, Palette, ScreenPosition(wr), scale, t, a, rotation.RendererRadians());
 		}
 
 		public void RenderDebugGeometry(WorldRenderer wr)

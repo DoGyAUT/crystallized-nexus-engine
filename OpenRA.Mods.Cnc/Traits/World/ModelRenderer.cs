@@ -52,6 +52,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		static readonly float[] ZeroVector = [0, 0, 0, 1];
 		static readonly float[] ZVector = [0, 0, 1, 1];
 		static readonly float[] FlipMtx = Util.ScaleMatrix(1, -1, 1);
+		static readonly float[] ReflectZMtx = Util.ScaleMatrix(1, 1, -1);
 		static readonly float[] ShadowScaleFlipMtx = Util.ScaleMatrix(2, -2, 2);
 		static readonly float[] GroundNormal = [0, 0, 1, 1];
 
@@ -100,7 +101,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		public ModelRenderProxy RenderAsync(
 			WorldRenderer wr, IEnumerable<ModelAnimation> models, in WRot camera, float scale,
 			in WRot groundOrientation, in WRot lightSource, ImmutableArray<float> lightAmbientColor, ImmutableArray<float> lightDiffuseColor,
-			PaletteReference color, PaletteReference normals, PaletteReference shadowPalette)
+			PaletteReference color, PaletteReference normals, PaletteReference shadowPalette, bool reflectZ = false)
 		{
 			if (!isInFrame)
 				throw new InvalidOperationException("BeginFrame has not been called. You cannot render until a frame has been started.");
@@ -139,6 +140,8 @@ namespace OpenRA.Mods.Cnc.Traits
 				var worldTransform = Util.MakeFloatMatrix(m.RotationFunc().AsMatrix());
 				worldTransform = Util.MatrixMultiply(scaleTransform, worldTransform);
 				worldTransform = Util.MatrixMultiply(offsetTransform, worldTransform);
+				if (reflectZ)
+					worldTransform = Util.MatrixMultiply(ReflectZMtx, worldTransform);
 
 				var bounds = m.Model.Bounds(m.FrameFunc());
 				var worldBounds = Util.MatrixAABBMultiply(worldTransform, bounds);
@@ -210,6 +213,8 @@ namespace OpenRA.Mods.Cnc.Traits
 					var rotations = Util.MakeFloatMatrix(m.RotationFunc().AsMatrix());
 					var worldTransform = Util.MatrixMultiply(scaleTransform, rotations);
 					worldTransform = Util.MatrixMultiply(offsetTransform, worldTransform);
+					if (reflectZ)
+						worldTransform = Util.MatrixMultiply(ReflectZMtx, worldTransform);
 
 					var transform = Util.MatrixMultiply(cameraTransform, worldTransform);
 					transform = Util.MatrixMultiply(correctionTransform, transform);

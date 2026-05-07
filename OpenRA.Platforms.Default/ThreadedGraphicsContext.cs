@@ -38,7 +38,7 @@ namespace OpenRA.Platforms.Default
 		Func<object> doClear;
 		Action doClearDepthBuffer;
 		Action doDisableDepthBuffer;
-		Action doEnableDepthBuffer;
+		Action<object> doEnableDepthBuffer;
 		Action doDisableScissor;
 		Action doPresent;
 		Func<string> getGLVersion;
@@ -84,7 +84,7 @@ namespace OpenRA.Platforms.Default
 					doClear = () => { context.Clear(); return null; };
 					doClearDepthBuffer = context.ClearDepthBuffer;
 					doDisableDepthBuffer = context.DisableDepthBuffer;
-					doEnableDepthBuffer = context.EnableDepthBuffer;
+					doEnableDepthBuffer = clear => context.EnableDepthBuffer((bool)clear);
 					doDisableScissor = context.DisableScissor;
 					doPresent = context.Present;
 					getGLVersion = () => context.GLVersion;
@@ -481,9 +481,9 @@ namespace OpenRA.Platforms.Default
 			Post(doDrawElements, (numIndices, offset));
 		}
 
-		public void EnableDepthBuffer()
+		public void EnableDepthBuffer(bool clear = true)
 		{
-			Post(doEnableDepthBuffer);
+			Post(doEnableDepthBuffer, clear);
 		}
 
 		public void EnableScissor(int left, int top, int width, int height)

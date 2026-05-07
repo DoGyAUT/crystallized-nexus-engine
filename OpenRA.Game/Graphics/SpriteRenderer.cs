@@ -202,6 +202,15 @@ namespace OpenRA.Graphics
 			vertexCount += 4;
 		}
 
+		internal void DrawSprite(Sprite s, PaletteReference pal, in float3 location, in float3 scale, in float3 tint, float alpha,
+			float rotation = 0f)
+		{
+			var samplers = SetRenderStateForSprite(s);
+			Util.FastCreateQuad(vertices, location + scale * s.Offset, s, samplers, ResolveTextureIndex(s, pal), vertexCount, scale * s.Size, tint, alpha,
+								rotation);
+			vertexCount += 4;
+		}
+
 		public void DrawSprite(Sprite s, PaletteReference pal, in float3 location, float scale, in float3 tint, float alpha,
 			float rotation = 0f)
 		{

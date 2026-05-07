@@ -88,6 +88,15 @@ namespace OpenRA.Mods.Common.Traits
 						continue;
 					}
 
+					if (powerDecision.FireWithoutTarget)
+					{
+						AIUtils.BotDebug($"{player.ResolvedPlayerName} fires support power {sp.Info.OrderName} without target scan.");
+						waitingPowers[sp] += 10;
+						bot.QueueOrder(new Order(sp.Key, supportPowerManager.Self, false) { SuppressVisualFeedback = true });
+
+						continue;
+					}
+
 					var attackLocation = FindCoarseAttackLocationToSupportPower(sp);
 					if (attackLocation == null)
 					{

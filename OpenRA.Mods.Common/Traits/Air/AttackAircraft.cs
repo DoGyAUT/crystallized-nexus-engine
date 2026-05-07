@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Primitives;
@@ -16,15 +17,16 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
 {
-	// TODO: Add CurleyShuffle (TD, TS), Circle (Generals Gunship-style)
-	public enum AirAttackType { Default, Hover, Strafe }
+	// TODO: Add Circle (Generals Gunship-style)
+	public enum AirAttackType { Default, Hover, Strafe, Shuffle }
 
 	public class AttackAircraftInfo : AttackFollowInfo, Requires<AircraftInfo>
 	{
 		[Desc("Attack behavior. Currently supported types are:",
 			"Default: Attack while following the default movement rules.",
 			"Hover: Hover, even if the Aircraft can't hover while idle.",
-			"Strafe: Perform a fixed-length attack run on the target.")]
+			"Strafe: Perform a fixed-length attack run on the target.",
+			"Shuffle: Hover during attacks, moving to a new position around the target after each burst.")]
 		public readonly AirAttackType AttackType = AirAttackType.Default;
 
 		[Desc(
@@ -32,13 +34,21 @@ namespace OpenRA.Mods.Common.Traits
 			"When set to WDist.Zero this defaults to the maximum armament range.")]
 		public readonly WDist StrafeRunLength = WDist.Zero;
 
+		[Desc(
+			"Preferred distance from the target after each shuffle. " +
+			"When set to WDist.Zero this defaults to the maximum armament range.")]
+		public readonly WDist ShuffleRange = WDist.Zero;
+
 		public override object Create(ActorInitializer init) { return new AttackAircraft(init.Self, this); }
 	}
 
-	public class AttackAircraft : AttackFollow
+	public class AttackAircraft : AttackFollow, INotifyBurstComplete
 	{
 		public new readonly AttackAircraftInfo Info;
 		readonly AircraftInfo aircraftInfo;
+
+		[VerifySync]
+		public int CompletedBursts { get; private set; }
 
 		public AttackAircraft(Actor self, AttackAircraftInfo info)
 			: base(self, info)
@@ -64,6 +74,12 @@ namespace OpenRA.Mods.Common.Traits
 				return false;
 
 			return TargetInFiringArc(self, target, Info.FacingTolerance);
+		}
+
+		void INotifyBurstComplete.FiredBurst(Actor self, in Target target, Armament a)
+		{
+			if (Info.AttackType == AirAttackType.Shuffle && Info.Armaments.Contains(a.Info.Name))
+				CompletedBursts++;
 		}
 	}
 }

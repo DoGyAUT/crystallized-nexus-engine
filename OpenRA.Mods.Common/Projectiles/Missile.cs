@@ -209,7 +209,7 @@ namespace OpenRA.Mods.Common.Projectiles
 	}
 
 	// TODO: double check square roots!!!
-	public class Missile : IProjectile, ISync
+	public class Missile : IProjectile, IJammableProjectile, ISync
 	{
 		enum States
 		{
@@ -246,6 +246,11 @@ namespace OpenRA.Mods.Common.Projectiles
 		bool allowPassBy; // TODO: use this also with high minimum launch angle settings
 
 		WPos targetPosition;
+
+		public bool IsJammable => info.Jammable;
+		public Actor SourceActor => args.SourceActor;
+		public Target GuidedTarget => args.GuidedTarget;
+		public WPos Position => pos;
 		readonly WVec offset;
 
 		WVec tarVel;

@@ -29,6 +29,11 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 			ActorPreviewInitializer init, RenderVoxelsInfo rv, string image, Func<WRot> orientation, int facings, PaletteReference p);
 	}
 
+	public interface IRenderVoxelShadowModifier
+	{
+		int? ShadowGroundZ(Actor self);
+	}
+
 	public class RenderVoxelsInfo : TraitInfo, IRenderActorPreviewInfo, Requires<BodyOrientationInfo>
 	{
 		[Desc("Defaults to the actor name.")]
@@ -119,6 +124,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		readonly BodyOrientation body;
 		readonly WRot camera;
 		readonly WRot lightSource;
+		IRenderVoxelShadowModifier[] shadowModifiers;
 
 		public RenderVoxels(Actor self, RenderVoxelsInfo info)
 		{
@@ -160,8 +166,23 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 				new ModelRenderable(
 					Renderer, components, self.CenterPosition, 0, camera, Info.Scale,
 					lightSource, Info.LightAmbientColor, Info.LightDiffuseColor,
-					colorPalette, normalsPalette, shadowPalette)
+					colorPalette, normalsPalette, shadowPalette,
+					1f, float3.Ones, TintModifiers.None, ShadowGroundZ)
 			];
+		}
+
+		int? ShadowGroundZ()
+		{
+			shadowModifiers ??= self.TraitsImplementing<IRenderVoxelShadowModifier>().ToArray();
+
+			foreach (var modifier in shadowModifiers)
+			{
+				var z = modifier.ShadowGroundZ(self);
+				if (z.HasValue)
+					return z;
+			}
+
+			return null;
 		}
 
 		IEnumerable<Rectangle> IRender.ScreenBounds(Actor self, WorldRenderer wr)

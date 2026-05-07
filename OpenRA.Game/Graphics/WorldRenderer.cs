@@ -288,6 +288,7 @@ namespace OpenRA.Graphics
 			terrainRenderer?.RenderTerrain(this, Viewport);
 
 			Game.Renderer.Flush();
+			ApplyPostProcessing(PostProcessPassType.AfterTerrain, enableDepthBuffer);
 
 			for (var i = 0; i < preparedRenderables.Count; i++)
 				preparedRenderables[i].Render(this);
@@ -295,12 +296,12 @@ namespace OpenRA.Graphics
 			if (enableDepthBuffer)
 				Game.Renderer.ClearDepthBuffer();
 
-			ApplyPostProcessing(PostProcessPassType.AfterActors);
+			ApplyPostProcessing(PostProcessPassType.AfterActors, enableDepthBuffer);
 
 			if (enableDepthBuffer)
 				Game.Renderer.ClearDepthBuffer();
 
-			ApplyPostProcessing(PostProcessPassType.AfterWorld);
+			ApplyPostProcessing(PostProcessPassType.AfterWorld, enableDepthBuffer);
 
 			if (enableDepthBuffer)
 				Game.Renderer.Context.DisableDepthBuffer();
@@ -329,8 +330,14 @@ namespace OpenRA.Graphics
 			Game.Renderer.Flush();
 		}
 
-		void ApplyPostProcessing(PostProcessPassType type)
+		void ApplyPostProcessing(PostProcessPassType type, bool preserveDepthBuffer = false)
 		{
+			if (preserveDepthBuffer)
+			{
+				Game.Renderer.Context.DisableDepthBuffer();
+				Game.Renderer.Flush();
+			}
+
 			foreach (var pass in postProcessPasses)
 			{
 				if (pass.Type != type || !pass.Enabled)
@@ -338,6 +345,12 @@ namespace OpenRA.Graphics
 
 				Game.Renderer.Flush();
 				pass.Draw(this);
+			}
+
+			if (preserveDepthBuffer)
+			{
+				Game.Renderer.Flush();
+				Game.Renderer.Context.EnableDepthBuffer(false);
 			}
 		}
 

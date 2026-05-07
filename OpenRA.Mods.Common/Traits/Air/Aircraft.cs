@@ -140,6 +140,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("How fast this actor ascends or descends during horizontal movement.")]
 		public readonly WAngle MaximumPitch = WAngle.FromDegrees(10);
 
+		[Desc("Distance ahead and behind the aircraft to sample terrain height for smoothing altitude changes during horizontal movement. 0 disables smoothing.")]
+		public readonly WDist TerrainAltitudeSmoothing = WDist.Zero;
+
 		[Desc("How fast this actor ascends or descends when moving vertically only (vertical take off/landing or hovering towards CruiseAltitude).")]
 		public readonly WDist AltitudeVelocity = new(43);
 

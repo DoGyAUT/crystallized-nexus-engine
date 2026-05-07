@@ -36,6 +36,7 @@ namespace OpenRA.Mods.Common.Activities
 		bool useLastVisibleTarget;
 		bool hasTicked;
 		bool returnToBase;
+		int completedBursts;
 
 		public FlyAttack(Actor self, AttackSource source, in Target target, bool forceAttack, Color? targetLineColor)
 		{
@@ -50,6 +51,7 @@ namespace OpenRA.Mods.Common.Activities
 			rearmable = self.TraitOrDefault<Rearmable>();
 
 			strafeDistance = attackAircraft.Info.StrafeRunLength;
+			completedBursts = attackAircraft.CompletedBursts;
 
 			// The target may become hidden between the initial order request and the first tick (e.g. if queued)
 			// Moving to any position (even if quite stale) is still better than immediately giving up
@@ -173,6 +175,11 @@ namespace OpenRA.Mods.Common.Activities
 				QueueChild(new StrafeAttackRun(attackAircraft, aircraft, target, strafeDistance != WDist.Zero ? strafeDistance : lastVisibleMaximumRange));
 			else if (attackAircraft.Info.AttackType == AirAttackType.Default && !aircraft.Info.CanHover)
 				QueueChild(new FlyAttackRun(target, lastVisibleMaximumRange, attackAircraft));
+			else if (attackAircraft.Info.AttackType == AirAttackType.Shuffle && attackAircraft.CompletedBursts != completedBursts)
+			{
+				completedBursts = attackAircraft.CompletedBursts;
+				QueueChild(new Fly(self, Target.FromPos(ChooseShufflePosition(self, target.CenterPosition, minimumRange, lastVisibleMaximumRange))));
+			}
 
 			// Turn to face the target if required.
 			else if (!attackAircraft.TargetInFiringArc(self, target, attackAircraft.Info.FacingTolerance))
@@ -213,6 +220,32 @@ namespace OpenRA.Mods.Common.Activities
 		bool HasArmamentsFor(Target target)
 		{
 			return !attackAircraft.IsTraitDisabled && attackAircraft.ChooseArmamentsForTarget(target, forceAttack).Any();
+		}
+
+		WPos ChooseShufflePosition(Actor self, WPos targetPosition, WDist minimumRange, WDist maximumRange)
+		{
+			var minLength = minimumRange.Length == 0 ? 0 : minimumRange.Length + 256;
+			var maxLength = maximumRange.Length;
+			var rangeLength = (attackAircraft.Info.ShuffleRange != WDist.Zero ? attackAircraft.Info.ShuffleRange.Length : maxLength)
+				.Clamp(minLength, maxLength);
+
+			var delta = self.CenterPosition - targetPosition;
+			var facing = delta.HorizontalLengthSquared != 0 ? delta.Yaw : new WAngle(self.World.SharedRandom.Next(1024));
+			var turn = self.World.SharedRandom.Next(128, 385);
+			if (self.World.SharedRandom.Next(2) == 0)
+				turn = -turn;
+
+			var offset = new WVec(0, -rangeLength, 0).Rotate(WRot.FromYaw(facing + new WAngle(turn)));
+			var shufflePosition = targetPosition + offset;
+			var cell = self.World.Map.CellContaining(shufflePosition);
+
+			if (!self.World.Map.Contains(cell))
+			{
+				var clamped = self.World.Map.CenterOfCell(self.World.Map.Clamp(cell));
+				shufflePosition = new WPos(clamped.X, clamped.Y, shufflePosition.Z);
+			}
+
+			return new WPos(shufflePosition.X, shufflePosition.Y, self.CenterPosition.Z);
 		}
 	}
 
