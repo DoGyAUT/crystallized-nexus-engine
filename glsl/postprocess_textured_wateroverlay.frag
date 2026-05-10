@@ -28,6 +28,13 @@ out vec4 fragColor;
 
 void main()
 {
+	// UV sentinel (2, 2): cliff-block passthrough — restore original terrain pixel unchanged.
+	if (vTexCoord.x > 1.5)
+	{
+		fragColor = texelFetch(SourceTexture, ivec2(gl_FragCoord.xy), 0);
+		return;
+	}
+
 	float diamond = abs(vTexCoord.x) + abs(vTexCoord.y);
 	if (diamond > 1.0)
 		discard;
