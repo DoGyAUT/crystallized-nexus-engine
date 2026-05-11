@@ -28,12 +28,13 @@ out vec4 fragColor;
 
 void main()
 {
-	// UV sentinel (2, 2): cliff-block passthrough — restore original terrain pixel unchanged.
+	// Always write fragColor first so all control-flow paths satisfy strict drivers.
+	vec4 src = texelFetch(SourceTexture, ivec2(gl_FragCoord.xy), 0);
+	fragColor = src;
+
+	// UV sentinel (2, 2): cliff-block passthrough - return with the pixel we already wrote.
 	if (vTexCoord.x > 1.5)
-	{
-		fragColor = texelFetch(SourceTexture, ivec2(gl_FragCoord.xy), 0);
 		return;
-	}
 
 	float diamond = abs(vTexCoord.x) + abs(vTexCoord.y);
 	if (diamond > 1.0)
@@ -64,7 +65,6 @@ void main()
 	float distortion = mix(ClearDistortion, StormDistortion, Intensity);
 
 	vec4 base = texelFetch(SourceTexture, ivec2(gl_FragCoord.xy + wave * distortion), 0);
-	vec4 unwarped = texelFetch(SourceTexture, ivec2(gl_FragCoord.xy), 0);
 
 	// Clear shimmer + tint
 	float clearShimmer = ClearShimmer * (0.5 + 0.5 * sin(clearPhaseX * 2.3 + clearPhaseY * 1.1));
@@ -78,5 +78,5 @@ void main()
 	vec3 overlay = mix(clearOverlay, stormOverlay, Intensity);
 	float alpha = mix(ClearAlpha, StormAlpha, Intensity);
 
-	fragColor = vec4(mix(unwarped.rgb, overlay, alpha), unwarped.a);
+	fragColor = vec4(mix(src.rgb, overlay, alpha), src.a);
 }
