@@ -21,7 +21,7 @@ uniform float StormWindSpeed;
 in vec2 vTexCoord;
 out vec4 fragColor;
 
-// Multi-octave trig noise — independent X/Y phases break diagonal banding.
+// Multi-octave trig noise - independent X/Y phases break diagonal banding.
 float cloudNoise(vec2 p)
 {
 	float n = 0.0;
