@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System.Collections.Generic;
 using System.IO;
 
 namespace OpenRA.Platforms.Default
@@ -50,7 +51,7 @@ namespace OpenRA.Platforms.Default
 
 		public void PauseSound(ISound sound, bool paused) { }
 		public void SetAllSoundsPaused(bool paused) { }
-		public void SetSoundVolume(float volume, ISound music, ISound video) { }
+		public void SetSoundVolume(float volume, IEnumerable<ISound> excluded) { }
 		public void StopSound(ISound sound) { }
 		public void StopAllSounds() { }
 		public void SetListenerPosition(WPos position) { }

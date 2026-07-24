@@ -48,6 +48,7 @@ namespace OpenRA
 		readonly Dictionary<uint, ISound> currentSounds = [];
 		readonly Dictionary<string, ISound> currentNotifications = [];
 		readonly List<ISound> currentSpeechSounds = [];
+		readonly HashSet<ISound> volumeSliderExemptSounds = [];
 		public bool DummyEngine { get; }
 
 		public Sound(IPlatform platform, SoundSettings soundSettings)
@@ -306,6 +307,31 @@ namespace OpenRA
 			soundEngine.PauseSound(music, true);
 		}
 
+		// Long-running managed sounds (e.g. a mod's dynamic music layers) that continuously drive their
+		// own volume and should not be swept to a flat gain whenever the sound/master volume changes.
+		public void ExemptFromVolumeSlider(ISound sound)
+		{
+			if (sound != null)
+				volumeSliderExemptSounds.Add(sound);
+		}
+
+		public void UnexemptFromVolumeSlider(ISound sound)
+		{
+			volumeSliderExemptSounds.Remove(sound);
+		}
+
+		IEnumerable<ISound> SoundsExcludedFromVolumeSlider()
+		{
+			if (music != null)
+				yield return music;
+
+			if (video != null)
+				yield return video;
+
+			foreach (var sound in volumeSliderExemptSounds)
+				yield return sound;
+		}
+
 		float soundVolumeModifier = 1.0f;
 		public float SoundVolumeModifier
 		{
@@ -314,7 +340,7 @@ namespace OpenRA
 			set
 			{
 				soundVolumeModifier = value;
-				soundEngine.SetSoundVolume(InternalSoundVolume, music, video);
+				soundEngine.SetSoundVolume(InternalSoundVolume, SoundsExcludedFromVolumeSlider());
 			}
 		}
 
@@ -340,7 +366,7 @@ namespace OpenRA
 			set
 			{
 				Game.Settings.Sound.SoundVolume = value;
-				soundEngine.SetSoundVolume(InternalSoundVolume, music, video);
+				soundEngine.SetSoundVolume(InternalSoundVolume, SoundsExcludedFromVolumeSlider());
 			}
 		}
 
