@@ -1088,8 +1088,12 @@ namespace OpenRA.Mods.Common.Server
 					return false;
 				}
 
-				// Handicaps may be set between 0 - 95% in steps of 5%
-				var options = Enumerable.Range(0, 20).Select(i => 5 * i);
+				// The "cn" mod uses named handicap tiers (0-3, see LobbyUtils.CnHandicapTiers) instead of
+				// the generic 0 - 95% in steps of 5% range.
+				var options = server.ModData.Manifest.Id == "cn"
+					? Enumerable.Range(0, 4)
+					: Enumerable.Range(0, 20).Select(i => 5 * i);
+
 				if (!options.Contains(handicap))
 				{
 					Log.Write("server", $"Invalid handicap: {s}");
