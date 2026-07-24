@@ -44,6 +44,27 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 
 		sealed record SlotDropDownOption(string Title, string Order, Func<bool> Selected);
 
+		// The "cn" mod replaces the generic 0-95% handicap slider with named difficulty tiers.
+		// Values are arbitrary indices (not percentages) consumed by the mod's own handicap traits.
+		static readonly (int Value, string Label)[] CnHandicapTiers =
+		{
+			(1, "Easy"),
+			(0, "Normal"),
+			(2, "Hard"),
+			(3, "Brutal"),
+		};
+
+		static bool UseCnHandicapTiers => Game.ModData?.Manifest.Id == "cn";
+
+		static string CnHandicapLabel(int handicap)
+		{
+			foreach (var (value, label) in CnHandicapTiers)
+				if (value == handicap)
+					return label;
+
+			return "Normal";
+		}
+
 		public static void ShowSlotDropDown(DropDownButtonWidget dropdown, Session.Slot slot,
 			Session.Client client, OrderManager orderManager, MapPreview map, ModData modData)
 		{
@@ -165,13 +186,15 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 					() => client.Handicap == ii,
 					() => orderManager.IssueOrder(Order.Command($"handicap {client.Index} {ii}")));
 
-				var label = $"{ii}%";
+				var label = UseCnHandicapTiers ? CnHandicapLabel(ii) : $"{ii}%";
 				item.Get<LabelWidget>("LABEL").GetText = () => label;
 				return item;
 			}
 
-			// Handicaps may be set between 0 - 95% in steps of 5%
-			var options = Enumerable.Range(0, 20).Select(i => 5 * i);
+			// Handicaps may be set between 0 - 95% in steps of 5%, or as named difficulty tiers for the cn mod
+			var options = UseCnHandicapTiers
+				? CnHandicapTiers.Select(t => t.Value)
+				: Enumerable.Range(0, 20).Select(i => 5 * i);
 			dropdown.ShowDropDown("TEAM_DROPDOWN_TEMPLATE", 150, options, SetupItem);
 		}
 
@@ -624,7 +647,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			dropdown.IsDisabled = () => s.LockHandicap || orderManager.LocalClient.IsReady;
 			dropdown.OnMouseDown = _ => ShowHandicapDropDown(dropdown, c, orderManager);
 
-			var handicapLabel = new CachedTransform<int, string>(h => $"{h}%");
+			var handicapLabel = new CachedTransform<int, string>(h => UseCnHandicapTiers ? CnHandicapLabel(h) : $"{h}%");
 			dropdown.GetText = () => handicapLabel.Update(c.Handicap);
 
 			HideChildWidget(parent, "HANDICAP");
@@ -635,7 +658,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			var team = parent.Get<LabelWidget>("HANDICAP");
 			team.IsVisible = () => true;
 
-			var handicapLabel = new CachedTransform<int, string>(h => $"{h}%");
+			var handicapLabel = new CachedTransform<int, string>(h => UseCnHandicapTiers ? CnHandicapLabel(h) : $"{h}%");
 			team.GetText = () => handicapLabel.Update(c.Handicap);
 			HideChildWidget(parent, "HANDICAP_DROPDOWN");
 		}
