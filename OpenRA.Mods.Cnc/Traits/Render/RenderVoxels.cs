@@ -32,6 +32,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 	public interface IRenderVoxelShadowModifier
 	{
 		int? ShadowGroundZ(Actor self);
+		WRot? ShadowGroundOrientation(Actor self);
 	}
 
 	public class RenderVoxelsInfo : TraitInfo, IRenderActorPreviewInfo, IRulesetLoaded, Requires<BodyOrientationInfo>
@@ -207,7 +208,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 					Renderer, components, self.CenterPosition, 0, camera, Info.Scale,
 					lightSource, Info.LightAmbientColor, Info.LightDiffuseColor,
 					colorPalette, normalsPalette, shadowPalette,
-					1f, float3.Ones, TintModifiers.None, ShadowGroundZ,
+					1f, float3.Ones, TintModifiers.None, ShadowGroundZ, ShadowGroundOrientation,
 					fullBrightStartIndex: Info.FullBrightStartIndex, fullBrightEndIndex: Info.FullBrightEndIndex,
 					fullBrightStartIndex2: Info.FullBrightStartIndex2, fullBrightEndIndex2: Info.FullBrightEndIndex2,
 					bloomGlowIntensity: Info.BloomGlowIntensity)
@@ -223,6 +224,20 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 				var z = modifier.ShadowGroundZ(self);
 				if (z.HasValue)
 					return z;
+			}
+
+			return null;
+		}
+
+		WRot? ShadowGroundOrientation()
+		{
+			shadowModifiers ??= self.TraitsImplementing<IRenderVoxelShadowModifier>().ToArray();
+
+			foreach (var modifier in shadowModifiers)
+			{
+				var orientation = modifier.ShadowGroundOrientation(self);
+				if (orientation.HasValue)
+					return orientation;
 			}
 
 			return null;

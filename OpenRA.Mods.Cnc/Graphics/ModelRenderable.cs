@@ -30,6 +30,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 		readonly PaletteReference normalsPalette;
 		readonly PaletteReference shadowPalette;
 		readonly Func<int?> shadowGroundZFunc;
+		readonly Func<WRot?> shadowGroundOrientationFunc;
 		readonly float scale;
 		readonly bool reflectZ;
 		readonly int fullBrightStartIndex;
@@ -85,6 +86,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			in WRot lightSource, ImmutableArray<float> lightAmbientColor, ImmutableArray<float> lightDiffuseColor,
 			PaletteReference color, PaletteReference normals, PaletteReference shadow,
 			float alpha, in float3 tint, TintModifiers tintModifiers, Func<int?> shadowGroundZFunc,
+			Func<WRot?> shadowGroundOrientationFunc = null,
 			bool isDecoration = false, bool reflectZ = false, int fullBrightStartIndex = -1, int fullBrightEndIndex = -1,
 			int fullBrightStartIndex2 = -1, int fullBrightEndIndex2 = -1, float bloomGlowIntensity = 1f)
 			: this(renderer, models, pos, zOffset, camera, scale,
@@ -93,6 +95,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 				fullBrightStartIndex, fullBrightEndIndex, fullBrightStartIndex2, fullBrightEndIndex2, bloomGlowIntensity)
 		{
 			this.shadowGroundZFunc = shadowGroundZFunc;
+			this.shadowGroundOrientationFunc = shadowGroundOrientationFunc;
 		}
 
 		public WPos Pos { get; }
@@ -109,7 +112,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				newPalette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, IsDecoration, reflectZ,
+				newPalette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, shadowGroundOrientationFunc, IsDecoration, reflectZ,
 				fullBrightStartIndex, fullBrightEndIndex, fullBrightStartIndex2, fullBrightEndIndex2, bloomGlowIntensity);
 		}
 
@@ -118,7 +121,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, newOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, IsDecoration, reflectZ,
+				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, shadowGroundOrientationFunc, IsDecoration, reflectZ,
 				fullBrightStartIndex, fullBrightEndIndex, fullBrightStartIndex2, fullBrightEndIndex2, bloomGlowIntensity);
 		}
 
@@ -127,7 +130,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos + vec, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, IsDecoration, reflectZ,
+				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, shadowGroundOrientationFunc, IsDecoration, reflectZ,
 				fullBrightStartIndex, fullBrightEndIndex, fullBrightStartIndex2, fullBrightEndIndex2, bloomGlowIntensity);
 		}
 
@@ -136,7 +139,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, isDecoration: true, reflectZ,
+				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, shadowGroundOrientationFunc, isDecoration: true, reflectZ,
 				fullBrightStartIndex: fullBrightStartIndex, fullBrightEndIndex: fullBrightEndIndex,
 				fullBrightStartIndex2: fullBrightStartIndex2, fullBrightEndIndex2: fullBrightEndIndex2,
 				bloomGlowIntensity: bloomGlowIntensity);
@@ -147,7 +150,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, IsDecoration, reflectZ: true,
+				Palette, normalsPalette, shadowPalette, Alpha, Tint, TintModifiers, shadowGroundZFunc, shadowGroundOrientationFunc, IsDecoration, reflectZ: true,
 				fullBrightStartIndex: fullBrightStartIndex, fullBrightEndIndex: fullBrightEndIndex,
 				fullBrightStartIndex2: fullBrightStartIndex2, fullBrightEndIndex2: fullBrightEndIndex2,
 				bloomGlowIntensity: bloomGlowIntensity);
@@ -158,7 +161,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, newAlpha, Tint, TintModifiers, shadowGroundZFunc, IsDecoration, reflectZ,
+				Palette, normalsPalette, shadowPalette, newAlpha, Tint, TintModifiers, shadowGroundZFunc, shadowGroundOrientationFunc, IsDecoration, reflectZ,
 				fullBrightStartIndex, fullBrightEndIndex, fullBrightStartIndex2, fullBrightEndIndex2, bloomGlowIntensity);
 		}
 
@@ -167,7 +170,7 @@ namespace OpenRA.Mods.Cnc.Graphics
 			return new ModelRenderable(
 				renderer, models, Pos, ZOffset, camera, scale,
 				lightSource, lightAmbientColor, lightDiffuseColor,
-				Palette, normalsPalette, shadowPalette, Alpha, newTint, newTintModifiers, shadowGroundZFunc, IsDecoration, reflectZ,
+				Palette, normalsPalette, shadowPalette, Alpha, newTint, newTintModifiers, shadowGroundZFunc, shadowGroundOrientationFunc, IsDecoration, reflectZ,
 				fullBrightStartIndex, fullBrightEndIndex, fullBrightStartIndex2, fullBrightEndIndex2, bloomGlowIntensity);
 		}
 
@@ -187,7 +190,8 @@ namespace OpenRA.Mods.Cnc.Graphics
 				var draw = model.models.Where(v => v.IsVisible);
 
 				var map = wr.World.Map;
-				var groundOrientation = map.TerrainOrientation(map.CellContaining(model.Pos));
+				var groundOrientation = model.shadowGroundOrientationFunc?.Invoke()
+					?? map.TerrainOrientation(map.CellContaining(model.Pos));
 				renderProxy = model.renderer.RenderAsync(
 					wr, draw, model.camera, model.scale, groundOrientation, model.lightSource,
 					model.lightAmbientColor, model.lightDiffuseColor,
